@@ -21,6 +21,10 @@ bool check_mother(ROOT::RVec<GenParticle> genparticles, const int index,
 
 
 namespace whtautau_tripleselection {
+auto compareForPairs(const ROOT::RVec<float> &lep1pt,
+                     const ROOT::RVec<float> &lep1iso,
+                     const ROOT::RVec<float> &lep2pt,
+                     const ROOT::RVec<float> &lep2iso);
 ROOT::RDF::RNode
 buildtruegentriple(ROOT::RDF::RNode df, const std::string &statusflags,
                  const std::string &status, const std::string &pdgids,
@@ -40,6 +44,12 @@ auto TripleSelectionAlgo(const float &mindeltaR_leptau, const float &mindeltaR_l
 namespace two_flavor {
 auto TripleSelectionAlgo(const float &mindeltaR_leptau, const float &mindeltaR_leplep);
 } // end namespace two_flavor
+namespace lep_tautau {
+auto TripleSelectionAlgo(const float &mindeltaR_leptau, const float &mindeltaR_tautau);
+} //end namespace lep_tautau
+namespace lep1lep1_lep2 {
+auto TripleSelectionAlgo(const float &mindeltaR_lep1lep1, const float &mindeltaR_lep1lep2); //end namespace lep1lep1_lep2
+}
 namespace elemutau {
 ROOT::RDF::RNode TripleSelection(ROOT::RDF::RNode df,
                                const std::vector<std::string> &input_vector,
@@ -61,6 +71,30 @@ ROOT::RDF::RNode TripleSelection(ROOT::RDF::RNode df,
                                const std::vector<std::string> &input_vector,
                                const std::string &triplename,
                                const float &mindeltaR_leptau, const float &mindeltaR_leplep);
+}
+namespace mu_tautau {
+ROOT::RDF::RNode TripleSelection(ROOT::RDF::RNode df,
+                               const std::vector<std::string> &input_vector,
+                               const std::string &triplename,
+                               const float &mindeltaR_leptau, const float &mindeltaR_tautau);
+}
+namespace ele_tautau {
+ROOT::RDF::RNode TripleSelection(ROOT::RDF::RNode df,
+                               const std::vector<std::string> &input_vector,
+                               const std::string &triplename,
+                               const float &mindeltaR_leptau, const float &mindeltaR_tautau);
+}
+namespace mumuele {
+ROOT::RDF::RNode TripleSelection(ROOT::RDF::RNode df,
+                               const std::vector<std::string> &input_vector,
+                               const std::string &triplename,
+                               const float &mindeltaR_lep1lep1, const float &mindeltaR_lep1lep2);
+}
+namespace eleelemu {
+ROOT::RDF::RNode TripleSelection(ROOT::RDF::RNode df,
+                               const std::vector<std::string> &input_vector,
+                               const std::string &triplename,
+                               const float &mindeltaR_lep1lep1, const float &mindeltaR_lep1lep2);
 }
 }
 namespace ditau_pairselection {

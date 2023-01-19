@@ -285,6 +285,30 @@ ROOT::RDF::RNode m_tt_lt(ROOT::RDF::RNode df, const std::string &outputname,
         },
         inputvectors);
 }
+/// Function to calculate the pt of the composed system of all visible particles.
+///
+/// \param df the dataframe to add the quantity to
+/// \param outputname name of the new column containing the pt value
+/// \param inputvectors a vector of the two names of the columns containing the
+/// required lorentz vectors
+///
+/// \returns a dataframe with the new column
+
+ROOT::RDF::RNode pt_123(ROOT::RDF::RNode df, const std::string &outputname,
+                        const std::vector<std::string> &inputvectors) {
+    // build visible pt from the three particles
+    return df.Define(
+        outputname,
+        [](const ROOT::Math::PtEtaPhiMVector &p4_1,
+           const ROOT::Math::PtEtaPhiMVector &p4_2,
+           const ROOT::Math::PtEtaPhiMVector &p4_3) {
+            if (p4_1.pt() < 0.0 || p4_2.pt() < 0.0 || p4_3.pt() < 0.0)
+                return default_float;
+            auto const pt_123 = p4_1 + p4_2 + p4_3;
+            return (float)pt_123.Pt();
+        },
+        inputvectors);
+}
 /// Function to calculate the pt of the W from a the visible lepton fourvector, the met four vector and the neutrino four vector from the Higgs system and
 /// add it to the dataframe.
 ///
@@ -791,6 +815,9 @@ namespace muon {
 ROOT::RDF::RNode id(ROOT::RDF::RNode df, const std::string &outputname,
                     const int &position, const std::string &pairname,
                     const std::string &idcolumn) {
+    Logger::get("muonIDflag")
+                ->debug(
+                    "muon ID  {}", position);
     return df.Define(
         outputname,
         [position](const ROOT::RVec<int> &pair, const ROOT::RVec<bool> &id) {
@@ -812,6 +839,9 @@ ROOT::RDF::RNode id(ROOT::RDF::RNode df, const std::string &outputname,
 ROOT::RDF::RNode is_global(ROOT::RDF::RNode df, const std::string &outputname,
                            const int &position, const std::string &pairname,
                            const std::string &globalflagcolumn) {
+    Logger::get("muonIsGlobalflag")
+                ->debug(
+                    "is global pos {}", position);
     return df.Define(outputname,
                      [position](const ROOT::RVec<int> &pair,
                                 const ROOT::RVec<bool> &globalflag) {
@@ -820,6 +850,56 @@ ROOT::RDF::RNode is_global(ROOT::RDF::RNode df, const std::string &outputname,
                      },
                      {pairname, globalflagcolumn});
 }
+/**
+ * @brief Function to writeout the is tracker flag of a muon.
+ *
+ * @param df the dataframe to add the quantity to
+ * @param outputname the name of the new quantity
+ * @param position position of the muon in the pair vector
+ * @param pairname name of the column containing the pair vector
+ * @param trackerflagcolumn name of the column containing the muon is global flag
+ * @return a dataframe with the new column
+ */
+ROOT::RDF::RNode is_tracker(ROOT::RDF::RNode df, const std::string &outputname,
+                           const int &position, const std::string &pairname,
+                           const std::string &trackerflagcolumn) {
+    Logger::get("muonIsTrackerflag")
+                ->debug(
+                    "is tracker pos {}", position);
+    return df.Define(outputname,
+                     [position](const ROOT::RVec<int> &pair,
+                                const ROOT::RVec<bool> &trackerflag) {
+                         const int index = pair.at(position, -1);
+                         return trackerflag.at(index, false);
+                     },
+                     {pairname, trackerflagcolumn});
+}
 } // end namespace muon
+namespace electron {
+/**
+ * @brief Function to writeout the id of a electron.
+ *
+ * @param df the dataframe to add the quantity to
+ * @param outputname the name of the new quantity
+ * @param position position of the muon in the pair vector
+ * @param pairname name of the column containing the pair vector
+ * @param idcolumn name of the column containing the muon id values
+ * @return a dataframe with the new column
+ */
+ROOT::RDF::RNode id(ROOT::RDF::RNode df, const std::string &outputname,
+                    const int &position, const std::string &pairname,
+                    const std::string &idcolumn) {
+    Logger::get("electronIDflag")
+                ->debug(
+                    "ele ID position {}", position);
+    return df.Define(
+        outputname,
+        [position](const ROOT::RVec<int> &pair, const ROOT::RVec<bool> &id) {
+            const int index = pair.at(position, -1);
+            return id.at(index, false);
+        },
+        {pairname, idcolumn});
+}
+} // end namespace electron
 } // end namespace quantities
 #endif /* GUARD_QUANTITIES_H */

@@ -52,6 +52,68 @@ bool check_mother(ROOT::RVec<GenParticle> genparticles, const int index,
 }
 
 namespace whtautau_tripleselection {
+auto compareForPairs(const ROOT::RVec<float> &lep1pt,
+                     const ROOT::RVec<float> &lep1iso,
+                     const ROOT::RVec<float> &lep2pt,
+                     const ROOT::RVec<float> &lep2iso) {
+    return [lep1pt, lep1iso, lep2pt, lep2iso](auto value_next,
+                                              auto value_previous) {
+        Logger::get("PairSelectionCompare")->debug("lep1 Pt: {}", lep1pt);
+        Logger::get("PairSelectionCompare")->debug("lep1 Iso: {}", lep1iso);
+        Logger::get("PairSelectionCompare")->debug("lep2 Pt: {}", lep2pt);
+        Logger::get("PairSelectionCompare")->debug("lep2 Iso: {}", lep2iso);
+        bool result = false;
+        Logger::get("PairSelectionCompare")
+            ->debug("Next pair: {}, {}", std::to_string(value_next.first),
+                    std::to_string(value_next.second));
+        Logger::get("PairSelectionCompare")
+            ->debug("Previous pair: {}, {}",
+                    std::to_string(value_previous.first),
+                    std::to_string(value_previous.second));
+        const auto i1_next = value_next.first;
+        const auto i1_previous = value_previous.first;
+        Logger::get("PairSelectionCompare")
+            ->debug("i1_next: {}, i1_previous : {}", i1_next, i1_previous);
+        // start with lep1 isolation
+        const auto iso1_next = lep1iso.at(i1_next);
+        const auto iso1_previous = lep1iso.at(i1_previous);
+        Logger::get("PairSelectionCompare")
+            ->debug("Isolations: {}, {}", iso1_next, iso1_previous);
+        if (not utility::ApproxEqual(iso1_next, iso1_previous)) {
+            result = iso1_next > iso1_previous;
+        } else {
+            // if too similar, compare lep1 pt
+            Logger::get("PairSelectionCompare")
+                ->debug("Isolation lep 1 too similar, taking pt 1");
+            const auto pt1_next = lep1pt.at(i1_next);
+            const auto pt1_previous = lep1pt.at(i1_previous);
+            if (not utility::ApproxEqual(pt1_next, pt1_previous)) {
+                result = pt1_next > pt1_previous;
+            } else {
+                // if too similar, compare lep2 iso
+                const auto i2_next = value_next.second;
+                const auto i2_previous = value_previous.second;
+                Logger::get("PairSelectionCompare")
+                    ->debug("Pt lep 1 too similar, taking lep2 iso");
+                const auto iso2_next = lep2iso.at(i2_next);
+                const auto iso2_previous = lep2iso.at(i2_previous);
+                if (not utility::ApproxEqual(iso2_next, iso2_previous)) {
+                    result = iso2_next > iso2_previous;
+                } else {
+                    // if too similar, compare lep2 pt
+                    Logger::get("PairSelectionCompare")
+                        ->debug("Isolation lep 2 too similar, taking pt 2");
+                    const auto pt2_next = lep2pt.at(i2_next);
+                    const auto pt2_previous = lep2pt.at(i2_previous);
+                    result = pt2_next > pt2_previous;
+                }
+            }
+        }
+        Logger::get("PairSelectionCompare")
+            ->debug("Returning result {}", result);
+        return result;
+    };
+} // end compare for pairs
 /**
  * @brief Function used to build a triple of GenParticles from the selected
  * triple. This uses the references of the reco particles to the gen
@@ -267,7 +329,9 @@ auto TripleSelectionAlgo(const float &mindeltaR_leptau, const float &mindeltaR_l
             ROOT::VecOps::Nonzero(electron_mask);
         const auto original_muon_indices = ROOT::VecOps::Nonzero(muon_mask);
         Logger::get("three_flavor::TripleSelectionAlgo")
-            ->debug("masks: org tau {}, org ele {}, org mu {}", tau_mask, electron_mask, muon_mask);
+            ->warn("masks: org tau {}, org ele {}, org mu {}", tau_mask, electron_mask, muon_mask);
+        Logger::get("three_flavor::TripleSelectionAlgo")
+            ->warn("org indizes: org tau {}, org ele {}, org mu {}", original_tau_indices, original_electron_indices, original_muon_indices);
 
         // only select events with one good muon and one good electron and at least one tau
         if (original_tau_indices.size() < 1 or
@@ -687,6 +751,234 @@ auto TripleSelectionAlgo(const float &mindeltaR_leptau, const float &mindeltaR_l
     };
 } // end namespace TripleSelectionAlgo
 } // end namespace two_flavor
+namespace lep_tautau {
+
+/// Implementation of the triple selection algorithm. First, only events
+/// that contain one good lepton and at least two good taus are considered.
+/// Events contain one good lepton and at least two good taus, if the
+/// tau_mask and the leptonmask have nonzero elements. These masks are
+/// constructed using the functions from the physicsobject namespace
+/// (e.g. physicsobject::CutPt). The argument triple gives information wheather the emt or the met channel is considered.
+///
+/// \returns an `ROOT::RVec<int>` with two values, the first one beeing
+/// the lepton from the W index, the second one beeing the lepton from the tau index and the third one the hadronic tau index.
+auto TripleSelectionAlgo(const float &mindeltaR_leptau, const float &mindeltaR_tautau) {
+    Logger::get("lep_tautau::TripleSelectionAlgo")
+        ->debug("Setting up algorithm");
+    return [mindeltaR_leptau, mindeltaR_tautau](const ROOT::RVec<float> &tau_pt,
+                       const ROOT::RVec<float> &tau_eta,
+                       const ROOT::RVec<float> &tau_phi,
+                       const ROOT::RVec<float> &tau_mass,
+                       const ROOT::RVec<float> &tau_iso,
+                       const ROOT::RVec<float> &lepton_pt,
+                       const ROOT::RVec<float> &lepton_eta,
+                       const ROOT::RVec<float> &lepton_phi,
+                       const ROOT::RVec<float> &lepton_mass,
+                       const ROOT::RVec<int> &lepton_mask,
+                       const ROOT::RVec<int> &tau_mask) {
+        // first entry is the lepton index,
+        // second entry is the tau index
+        ROOT::RVec<int> selected_triple = {-1, -1, -1};
+        const auto original_tau_indices = ROOT::VecOps::Nonzero(tau_mask);
+        const auto original_lepton_indices = ROOT::VecOps::Nonzero(lepton_mask);
+        Logger::get("lep_tautau::TripleSelectionAlgo")
+            ->debug("masks: org tau {}, org lepton {}", tau_mask, lepton_mask);
+
+        // only select events with at least two good taus and excatly one lepton (muon or electron)
+        if (original_tau_indices.size() < 2 or
+            original_lepton_indices.size() != 1) {
+            return selected_triple;
+        }
+        
+        Logger::get("lep_tautau::TripleSelectionAlgo")
+            ->debug("Running algorithm on good taus and leptons");
+        Logger::get("lep_tautau::TripleSelectionAlgo")
+            ->debug("original lepton indices {}", original_lepton_indices);
+        Logger::get("lep_tautau::TripleSelectionAlgo")
+            ->debug("original tau indices {}", original_tau_indices);
+
+        const auto selected_tau_pt =
+            ROOT::VecOps::Take(tau_pt, original_tau_indices);
+        const auto selected_tau_iso =
+            ROOT::VecOps::Take(tau_iso, original_tau_indices);
+        const auto selected_lepton_pt =
+            ROOT::VecOps::Take(lepton_pt, original_lepton_indices);
+        Logger::get("lep_tautau::TripleSelectionAlgo")
+            ->debug("tau mask {}", tau_mask);
+        Logger::get("lep_tautau::TripleSelectionAlgo")
+            ->debug("tau pt {}", tau_pt);
+        Logger::get("lep_tautau::TripleSelectionAlgo")
+            ->debug("lepton pt {}", lepton_pt);
+        Logger::get("lep_tautau::TripleSelectionAlgo")
+            ->debug("selected tau pt {}", selected_tau_pt);
+        Logger::get("lep_tautau::TripleSelectionAlgo")
+            ->debug("selected tau iso {}", selected_tau_iso);
+        Logger::get("lep_tautau::TripleSelectionAlgo")
+            ->debug("selected lepton pt {}", selected_lepton_pt);
+
+        // sort hadronic taus by their pt in descending order
+        const auto sorted_tau_idx = ROOT::VecOps::Argsort(
+            -1. * selected_tau_iso);
+        Logger::get("lep_tautau::TripleSelectionAlgo")
+            ->debug("sorted taus {}", sorted_tau_idx);
+
+        // construct the four vectors of the selected lepton
+        Logger::get("lep_tautau::TripleSelectionAlgo")
+            ->debug("lepton pts: {}", lepton_pt); 
+        ROOT::Math::PtEtaPhiMVector lepton = ROOT::Math::PtEtaPhiMVector(
+        lepton_pt.at(original_lepton_indices.at(0)), lepton_eta.at(original_lepton_indices.at(0)),
+        lepton_phi.at(original_lepton_indices.at(0)), lepton_mass.at(original_lepton_indices.at(0)));
+
+        const auto pair_indices = ROOT::VecOps::Combinations(
+            selected_tau_pt, 2); // Gives indices of tau-tau pairs
+        Logger::get("lep_tautau::TripleSelectionAlgo")
+            ->debug("Hadronic tau pairs: {} {}", pair_indices[0], pair_indices[1]);
+
+        const auto pairs = ROOT::VecOps::Construct<std::pair<UInt_t, UInt_t>>(
+            pair_indices[0], pair_indices[1]);
+        Logger::get("lep_tautau::TripleSelectionAlgo")
+            ->debug("Hadronic tau pairs size: {}", pairs.size());
+        int counter = 0;
+        for (auto &pair : pairs) {
+            counter++;
+            Logger::get("lep_tautau::TripleSelectionAlgo")
+                ->debug("Constituents hadronic tau pair {}. : {} {}", counter, pair.first,
+                        pair.second);
+        }
+
+        const auto sorted_pairs = ROOT::VecOps::Sort(
+            pairs, compareForPairs(selected_tau_pt, selected_tau_iso,
+                                   selected_tau_pt, selected_tau_iso));
+
+        // construct the four vectors of the selected taus to check
+        // deltaR and reject a pair if the candidates are too close
+        for (auto &candidate : sorted_pairs) {
+            auto tau_index_1 = original_tau_indices[candidate.first];
+            ROOT::Math::PtEtaPhiMVector tau_1 = ROOT::Math::PtEtaPhiMVector(
+                tau_pt.at(tau_index_1), tau_eta.at(tau_index_1),
+                tau_phi.at(tau_index_1), tau_mass.at(tau_index_1));
+            Logger::get("lep_tautau::TripleSelectionAlgo")
+                ->debug("{} leadint tau vector: {}", tau_index_1, tau_1);
+            auto tau_index_2 = original_tau_indices[candidate.second];
+            ROOT::Math::PtEtaPhiMVector tau_2 = ROOT::Math::PtEtaPhiMVector(
+                tau_pt.at(tau_index_2), tau_eta.at(tau_index_2),
+                tau_phi.at(tau_index_2), tau_mass.at(tau_index_2));
+            Logger::get("lep_tautau::TripleSelectionAlgo")
+                ->debug("{} tau vector: {}", tau_index_2, tau_2);
+            Logger::get("lep_tautau::TripleSelectionAlgo")
+                ->debug("DeltaR: {}",
+                        ROOT::Math::VectorUtil::DeltaR(tau_1, tau_2));
+            if (ROOT::Math::VectorUtil::DeltaR(tau_1, tau_2) > mindeltaR_tautau && ROOT::Math::VectorUtil::DeltaR(tau_1, lepton) > mindeltaR_leptau && ROOT::Math::VectorUtil::DeltaR(tau_2, lepton) > mindeltaR_leptau) {
+                Logger::get("lep_tautau::TripleSelectionAlgo")
+                    ->debug("Selected original pair indices: tau_1 = {} , "
+                            "tau_2 = {}",
+                            tau_index_1, tau_index_2);
+                Logger::get("lep_tautau::TripleSelectionAlgo")
+                    ->debug("Tau_1 Pt = {} , Tau_2 Pt = {} ", tau_1.Pt(),
+                            tau_2.Pt());
+                Logger::get("lep_tautau::TripleSelectionAlgo")
+                    ->debug("Tau_1 Iso = {} , Tau_2 Iso = {} ",
+                            tau_iso[tau_index_1], tau_iso[tau_index_2]);
+                if (tau_1.Pt()>tau_2.Pt()) {
+                   selected_triple = {static_cast<int>(original_lepton_indices.at(0)), static_cast<int>(tau_index_1), static_cast<int>(tau_index_2)}; 
+                }
+                else {
+                    selected_triple = {static_cast<int>(original_lepton_indices.at(0)), static_cast<int>(tau_index_2), static_cast<int>(tau_index_1)};
+                }
+                break;
+            }
+        }
+        Logger::get("lep_tautau::TripleSelectionAlgo")
+            ->debug("Final triple {} {} {}", selected_triple[0], selected_triple[1], selected_triple[2]);
+
+        return selected_triple;
+    };
+} // end namespace TripleSelectionAlgo
+} // end namespace lep_tautau
+namespace lep1lep1_lep2 {
+
+/// Implementation of the triple selection algorithm. First, only events
+/// that contain 2 good lepton "1" and loose lepton "2" are considered.
+/// \returns an `ROOT::RVec<int>` with two values, the first one beeing
+auto TripleSelectionAlgo(const float &mindeltaR_lep1lep1, const float &mindeltaR_lep1lep2) {
+    Logger::get("lep1lep1_lep2::TripleSelectionAlgo")
+        ->debug("Setting up algorithm");
+    return [mindeltaR_lep1lep1, mindeltaR_lep1lep2](const ROOT::RVec<float> &lep1_pt,
+                       const ROOT::RVec<float> &lep1_eta,
+                       const ROOT::RVec<float> &lep1_phi,
+                       const ROOT::RVec<float> &lep1_mass,
+                       const ROOT::RVec<float> &lep2_pt,
+                       const ROOT::RVec<float> &lep2_eta,
+                       const ROOT::RVec<float> &lep2_phi,
+                       const ROOT::RVec<float> &lep2_mass,
+                       const ROOT::RVec<int> &lep1_mask, const ROOT::RVec<int> &lep2_mask) {
+        // first 2 entries are lep1 indices,
+        // third entry is the lep2 index
+        ROOT::RVec<int> selected_triple = {-1, -1, -1};
+        const auto original_lep1_indices = ROOT::VecOps::Nonzero(lep1_mask);
+        const auto original_lep2_indices = ROOT::VecOps::Nonzero(lep2_mask);
+        Logger::get("lep1lep1_lep2::TripleSelectionAlgo")
+            ->debug("masks: org lep1 {}, org lep2 {}", lep1_mask, lep2_mask);
+
+        // only select events with at least two good lep1 and excatly one lepton (muon or electron)
+        if (original_lep1_indices.size() != 2 or
+            original_lep2_indices.size() != 1) {
+            return selected_triple;
+        }
+        
+        Logger::get("lep1lep1_lep2::TripleSelectionAlgo")
+            ->debug("Running algorithm on good taus and leptons");
+        Logger::get("lep1lep1_lep2::TripleSelectionAlgo")
+            ->debug("original lep1 indices {}", original_lep1_indices);
+        Logger::get("lep1lep1_lep2::TripleSelectionAlgo")
+            ->debug("original lep2 indices {}", original_lep2_indices);
+
+        const auto selected_lep1_pt =
+            ROOT::VecOps::Take(lep1_pt, original_lep1_indices);
+        const auto selected_lep2_pt =
+            ROOT::VecOps::Take(lep2_pt, original_lep2_indices);
+        Logger::get("lep1lep1_lep2::TripleSelectionAlgo")
+            ->debug("lep1 mask {}", lep1_mask);
+        Logger::get("lep1lep1_lep2::TripleSelectionAlgo")
+            ->debug("lep1 pt {}", lep1_pt);
+        Logger::get("lep1lep1_lep2::TripleSelectionAlgo")
+            ->debug("lep2 pt {}", lep2_pt);
+        Logger::get("lep1lep1_lep2::TripleSelectionAlgo")
+            ->debug("selected lep1 pt {}", selected_lep1_pt);
+        Logger::get("lep1lep1_lep2::TripleSelectionAlgo")
+            ->debug("selected lep2 pt {}", selected_lep2_pt);
+
+
+        // construct the four vectors of the selected particles
+        ROOT::Math::PtEtaPhiMVector lep1_1 = ROOT::Math::PtEtaPhiMVector(
+        lep1_pt.at(original_lep1_indices.at(0)), lep1_eta.at(original_lep1_indices.at(0)),
+        lep1_phi.at(original_lep1_indices.at(0)), lep1_mass.at(original_lep1_indices.at(0)));
+        ROOT::Math::PtEtaPhiMVector lep1_2 = ROOT::Math::PtEtaPhiMVector(
+        lep1_pt.at(original_lep1_indices.at(1)), lep1_eta.at(original_lep1_indices.at(1)),
+        lep1_phi.at(original_lep1_indices.at(1)), lep1_mass.at(original_lep1_indices.at(1)));
+        ROOT::Math::PtEtaPhiMVector lep2 = ROOT::Math::PtEtaPhiMVector(
+        lep2_pt.at(original_lep2_indices.at(0)), lep2_eta.at(original_lep2_indices.at(0)),
+        lep2_phi.at(original_lep2_indices.at(0)), lep2_mass.at(original_lep2_indices.at(0)));
+
+        
+        if (ROOT::Math::VectorUtil::DeltaR(lep1_1, lep1_2) > mindeltaR_lep1lep1 && ROOT::Math::VectorUtil::DeltaR(lep1_1, lep2) > mindeltaR_lep1lep2 && ROOT::Math::VectorUtil::DeltaR(lep1_2, lep2) > mindeltaR_lep1lep2) {
+            Logger::get("lep1lep1_lep2::TripleSelectionAlgo")
+                ->debug("lep1_1 Pt = {} , lep1_2 Pt = {} ", lep1_1.Pt(),
+                        lep1_2.Pt());
+            if (lep1_1.Pt()>lep1_2.Pt()) {
+                selected_triple = {static_cast<int>(original_lep1_indices.at(0)), static_cast<int>(original_lep1_indices.at(1)), static_cast<int>(original_lep2_indices.at(0))}; 
+            }
+            else {
+                selected_triple = {static_cast<int>(original_lep1_indices.at(1)), static_cast<int>(original_lep1_indices.at(0)), static_cast<int>(original_lep2_indices.at(0))}; 
+            }
+        }
+        Logger::get("lep1lep1_lep2::TripleSelectionAlgo")
+            ->debug("Final triple {} {} {}", selected_triple[0], selected_triple[1], selected_triple[2]);
+
+        return selected_triple;
+    };
+} // end namespace TripleSelectionAlgo
+} // end namespace lep1lep1_lep2
 namespace elemutau {
 
 /**
@@ -870,6 +1162,158 @@ ROOT::RDF::RNode TripleSelection(ROOT::RDF::RNode df,
     return df1;
 }
 } // end namespace mumutau
+namespace mumuele {
+
+/**
+ * @brief Function used to select a triple from mumu+jets events to estimate the jet to ele fakerate. 
+ *
+ * @param df the input dataframe
+ * @param input_vector vector of strings containing the columns needed for the
+ * alogrithm. For the muTau pair selection these values are:
+    - muon_pts
+    - muon_etas
+    - muon_phis
+    - muon_masses
+    - ele_mask containing the flags whether the ele is a good tau or not
+    - muon_mask containing the flags whether the muons are a good muons or not
+ * @param triplename name of the new column containing the pair index
+ * @param mindeltaR_leptau the seperation between each lepton and the tau has to be larger
+ than
+ * this value
+ * @param mindeltaR_leplep the seperation between the leptons has to be larger
+ than
+ * this value
+ * @return a new dataframe with the triple index column added
+ */
+ROOT::RDF::RNode TripleSelection(ROOT::RDF::RNode df,
+                               const std::vector<std::string> &input_vector,
+                               const std::string &triplename,
+                               const float &mindeltaR_lep1lep1, const float &mindeltaR_lep1lep2) {
+    Logger::get("mumuele::TripleSelection")
+        ->debug("Setting up MuMuEle Triple building");
+    auto df1 = df.Define(
+        triplename,
+        whtautau_tripleselection::lep1lep1_lep2::TripleSelectionAlgo(mindeltaR_lep1lep1, mindeltaR_lep1lep2),
+        input_vector);
+    return df1;
+}
+} // end namespace mumuele
+namespace eleelemu {
+
+/**
+ * @brief Function used to select a triple from eleele+jets events to estimate the jet to mu fakerate. 
+ *
+ * @param df the input dataframe
+ * @param input_vector vector of strings containing the columns needed for the
+ * alogrithm. For the muTau pair selection these values are:
+    - muon_pts
+    - muon_etas
+    - muon_phis
+    - muon_masses
+    - ele_mask containing the flags whether the ele is a good tau or not
+    - muon_mask containing the flags whether the muons are a good muons or not
+ * @param triplename name of the new column containing the pair index
+ * @param mindeltaR_lep1lep1 the seperation between each lepton1  has to be larger
+ than
+ * this value
+ * @param mindeltaR_lep1lep2 the seperation between the leptons has to be larger
+ than
+ * this value
+ * @return a new dataframe with the triple index column added
+ */
+ROOT::RDF::RNode TripleSelection(ROOT::RDF::RNode df,
+                               const std::vector<std::string> &input_vector,
+                               const std::string &triplename,
+                               const float &mindeltaR_lep1lep1, const float &mindeltaR_lep1lep2) {
+    Logger::get("eleelemu::TripleSelection")
+        ->debug("Setting up EleEleMu Triple building");
+    auto df1 = df.Define(
+        triplename,
+        whtautau_tripleselection::lep1lep1_lep2::TripleSelectionAlgo(mindeltaR_lep1lep1, mindeltaR_lep1lep2),
+        input_vector);
+    return df1;
+}
+} // end namespace eleelemu
+namespace mu_tautau {
+
+/**
+ * @brief Function used to select the lepton triple from the W boson and the Higgs boson decay. 
+ *
+ * @param df the input dataframe
+ * @param input_vector vector of strings containing the columns needed for the
+ * alogrithm. For the muTau pair selection these values are:
+    - tau_pt
+    - tau_eta
+    - tau_phi
+    - tau_mass
+    - muon_pt
+    - muon_eta
+    - muon_phi
+    - muon_mass
+    - tau_mask containing the flags whether the tau is a good tau or not
+    - muon_mask containing the flags whether the muons are a good muons or not
+ * @param triplename name of the new column containing the pair index
+ * @param mindeltaR_leptau the seperation between each lepton and the tau has to be larger
+ than
+ * this value
+ * @param mindeltaR_leplep the seperation between the leptons has to be larger
+ than
+ * this value
+ * @return a new dataframe with the triple index column added
+ */
+ROOT::RDF::RNode TripleSelection(ROOT::RDF::RNode df,
+                               const std::vector<std::string> &input_vector,
+                               const std::string &triplename,
+                               const float &mindeltaR_leptau, const float &mindeltaR_tautau) {
+    Logger::get("mu_tautau::TripleSelection")
+        ->debug("Setting up mu_TauTau Triple building");
+    auto df1 = df.Define(
+        triplename,
+        whtautau_tripleselection::lep_tautau::TripleSelectionAlgo(mindeltaR_leptau, mindeltaR_tautau),
+        input_vector);
+    return df1;
+}
+} // end namespace mutautau
+namespace ele_tautau {
+
+/**
+ * @brief Function used to select the lepton triple from the W boson and the Higgs boson decay. 
+ *
+ * @param df the input dataframe
+ * @param input_vector vector of strings containing the columns needed for the
+ * alogrithm. For the muTau pair selection these values are:
+    - tau_pt
+    - tau_eta
+    - tau_phi
+    - tau_mass
+    - muon_pt
+    - muon_eta
+    - muon_phi
+    - muon_mass
+    - tau_mask containing the flags whether the tau is a good tau or not
+    - muon_mask containing the flags whether the muons are a good muons or not
+ * @param triplename name of the new column containing the pair index
+ * @param mindeltaR_leptau the seperation between each lepton and the tau has to be larger
+ than
+ * this value
+ * @param mindeltaR_leplep the seperation between the leptons has to be larger
+ than
+ * this value
+ * @return a new dataframe with the triple index column added
+ */
+ROOT::RDF::RNode TripleSelection(ROOT::RDF::RNode df,
+                               const std::vector<std::string> &input_vector,
+                               const std::string &triplename,
+                               const float &mindeltaR_leptau, const float &mindeltaR_tautau) {
+    Logger::get("ele_tautau::TripleSelection")
+        ->debug("Setting up ele_TauTau Triple building");
+    auto df1 = df.Define(
+        triplename,
+        whtautau_tripleselection::lep_tautau::TripleSelectionAlgo(mindeltaR_leptau, mindeltaR_tautau),
+        input_vector);
+    return df1;
+}
+} // end namespace mutautau
 }// end namespace whtautau_tripleselection
 
 

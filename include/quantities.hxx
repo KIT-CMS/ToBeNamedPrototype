@@ -54,6 +54,8 @@ ROOT::RDF::RNode deltaPhi(ROOT::RDF::RNode df, const std::string &outputname,
                         const std::string &p_1_p4, const std::string &p_2_p4);
 ROOT::RDF::RNode deltaPhi_WH(ROOT::RDF::RNode df, const std::string &outputname,
                         const std::string &p_1_p4, const std::string &p_2_p4, const std::string &p_3_p4);
+ROOT::RDF::RNode pt_123(ROOT::RDF::RNode df, const std::string &outputname,
+                        const std::vector<std::string> &inputvectors);
 ROOT::RDF::RNode mT(ROOT::RDF::RNode df, const std::string &outputname,
                     const std::string &particle_p4, const std::string &met);
 ROOT::RDF::RNode pt_tt(ROOT::RDF::RNode df, const std::string &outputname,
@@ -103,6 +105,14 @@ ROOT::RDF::RNode id(ROOT::RDF::RNode df, const std::string &outputname,
 ROOT::RDF::RNode is_global(ROOT::RDF::RNode df, const std::string &outputname,
                            const int &position, const std::string &pairname,
                            const std::string &globalflagcolumn);
+ROOT::RDF::RNode is_tracker(ROOT::RDF::RNode df, const std::string &outputname,
+                           const int &position, const std::string &pairname,
+                           const std::string &trackerflagcolumn);
 } // namespace muon
+namespace electron {
+ROOT::RDF::RNode id(ROOT::RDF::RNode df, const std::string &outputname,
+                    const int &position, const std::string &pairname,
+                    const std::string &idcolumn);
+} // end namespace electron
 } // end namespace quantities
 #endif /* GUARD_QUANTITIES_H */

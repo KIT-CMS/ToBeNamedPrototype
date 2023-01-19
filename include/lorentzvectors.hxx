@@ -14,6 +14,8 @@ ROOT::RDF::RNode buildMet(ROOT::RDF::RNode df, const std::string &met_pt,
                           const std::string &outputname);
 ROOT::RDF::RNode p4_miss_lt(ROOT::RDF::RNode df, const std::string &outputname,
                         const std::vector<std::string> &inputvectors);
+ROOT::RDF::RNode p4_miss_tt(ROOT::RDF::RNode df, const std::string &outputname,
+                        const std::vector<std::string> &inputvectors);
 /// namespace used for mutau lorentzvectors
 namespace mutau {
 ROOT::RDF::RNode build(ROOT::RDF::RNode df, const std::string &pairname,

@@ -949,6 +949,37 @@ selection_trigger(ROOT::RDF::RNode df, const std::string &pt_1,
     return df1;
 }
 /**
+ * @brief Function used to readout the embedding cleaning correction scalefactors
+ *
+ * @param df the input dataframe
+ * @param puppi_met the puppi MET of the event.
+ * @param output name of the output column
+ * @param sf_file path to the correctionlib file containing the scale factor
+ * @param idAlgorithm name of the scale factor in the correctionlib file
+ * @return ROOT::RDF::RNode
+ */
+ROOT::RDF::RNode
+embedding_cleaning_correction(ROOT::RDF::RNode df, const std::string &puppi_met,
+                              const std::string &output, const std::string &sf_file,
+                              const std::string &idAlgorithm) {
+
+    Logger::get("EmbeddingCleaningCorrectionSF")
+        ->debug("Correction - Name {}", idAlgorithm);
+    auto evaluator =
+        correction::CorrectionSet::from_file(sf_file)->at(idAlgorithm);
+    auto df1 = df.Define(
+        output,
+        [evaluator](const float &puppi_met) {
+            Logger::get("EmbeddingCleaningCorrectionSF")->debug(" puppi_met {}", puppi_met);
+            double sf = 1.;
+            sf = evaluator->evaluate({puppi_met});
+            Logger::get("EmbeddingCleaningCorrectionSF")->debug("sf {}", sf);
+            return sf;
+        },
+        {puppi_met});
+    return df1;
+}
+/**
  * @brief Function used to readout the embedding selection trigger scalefactors.
  *
  * @param df the input dataframe

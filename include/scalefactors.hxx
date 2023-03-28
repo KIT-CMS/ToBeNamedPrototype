@@ -103,7 +103,10 @@ selection_trigger(ROOT::RDF::RNode df, const std::string &pt_1,
                   const std::string &eta_1, const std::string &pt_2,
                   const std::string &eta_2, const std::string &output,
                   const std::string &sf_file, const std::string &idAlgorithm);
-
+ROOT::RDF::RNode
+embedding_cleaning_correction(ROOT::RDF::RNode df, const std::string &puppi_met,
+                              const std::string &output, const std::string &sf_file,
+                              const std::string &idAlgorithm);
 ROOT::RDF::RNode selection_id(ROOT::RDF::RNode df, const std::string &pt,
                               const std::string &eta, const std::string &output,
                               const std::string &sf_file,

@@ -142,14 +142,18 @@ ROOT::RDF::RNode VetoCandInMask(ROOT::RDF::RNode df,
     return df.Define(outputmaskname,
                      [index, inputmaskname](const ROOT::RVec<int> &mask,
                                             const ROOT::RVec<int> &pair) {
-                         Logger::get("VetoCandInMask")
+                        Logger::get("VetoCandInMask")
+                            ->debug("Vetoing the selected candidate (index "
+                                    "{}) from the mask {}",
+                                    index, inputmaskname);
+                        auto newmask = mask;
+                        if (pair.at(index) >= 0)
+                            newmask.at(pair.at(index)) = 0;
+                        Logger::get("VetoCandInMask")
                              ->debug("Vetoing the selected candidate (index "
-                                     "{}) from the mask {}",
-                                     index, inputmaskname);
-                         auto newmask = mask;
-                         if (pair.at(index) >= 0)
-                             newmask.at(pair.at(index)) = 0;
-                         return newmask;
+                                     "{}) from the mask {}, new mask {}",
+                                     index, inputmaskname, newmask);    
+                        return newmask;
                      },
                      {inputmaskname, dileptonpair});
 }
@@ -436,7 +440,25 @@ ROOT::RDF::RNode CutIsolation(ROOT::RDF::RNode df, const std::string &maskname,
                          {isolationName});
     return df1;
 }
-
+/// Function to cut on muons based on the muon signature: isTracker or isGlobal
+///
+/// \param[in] df the input dataframe
+/// \param[in] isTracker name of the signature column in the NanoAOD
+/// \param[in] isGlobal name of the signature column in the NanoAOD
+/// \param[out] maskname the name of the new mask to be added as column to the
+/// dataframe 
+///
+/// \return a dataframe containing the new mask
+ROOT::RDF::RNode CutIsTrackerOrIsGlobal(ROOT::RDF::RNode df, const std::string &isTracker, const std::string &isGlobal, const std::string &maskname) {
+        auto lambda = [](const ROOT::RVec<Bool_t>  &tracker, const ROOT::RVec<Bool_t>  &global) {
+            ROOT::RVec<int> mask = (tracker == 1 || global == 1);
+            Logger::get("lep1lep1_lep2::TripleSelectionAlgo")
+                ->debug("istracker {}, isglobal {}, mask {}", tracker, global, mask);
+            return mask;
+        };
+        auto df1 = df.Define(maskname, lambda, {isTracker, isGlobal});
+        return df1;
+}
 /// Function to create a column of vector of random numbers between 0 and 1
 /// with size of the input object collection
 ///
@@ -870,7 +892,7 @@ PtCorrection_genTau(ROOT::RDF::RNode df, const std::string &corrected_pt,
                 corrected_pt_values[i] = pt_values.at(i);
             }
             Logger::get("tauEnergyCorrection")
-                ->debug("tau pt before {}, tau pt after {}, decaymode {}",
+                ->warn("tau pt before {}, tau pt after {}, decaymode {}",
                         pt_values.at(i), corrected_pt_values.at(i),
                         decay_modes.at(i));
         }
@@ -883,6 +905,39 @@ PtCorrection_genTau(ROOT::RDF::RNode df, const std::string &corrected_pt,
 } // end namespace tau
 
 namespace electron {
+/// Function to correct electron pt
+///
+/// \param[in] df the input dataframe
+/// \param[out] corrected_pt name of the corrected electron pt to be calculated
+/// \param[in] pt name of the raw electron pt
+/// \param[in] eta the name of the raw electron eta
+/// \param[in] sf_barrel scale factor to be applied to electrons in the barrel
+/// \param[in] sf_endcap scale factor to be applied to electrons in the endcap
+///
+/// \return a dataframe containing the new mask
+ROOT::RDF::RNode
+PtCorrection_byValue(ROOT::RDF::RNode df, const std::string &corrected_pt,
+                     const std::string &pt, const std::string &eta,
+                     const float &sf_barrel, const float &sf_endcap) {
+    auto electron_pt_correction_lambda =
+        [sf_barrel, sf_endcap](const ROOT::RVec<float> &pt_values,
+                               const ROOT::RVec<float> &eta) {
+            ROOT::RVec<float> corrected_pt_values(pt_values.size());
+            for (int i = 0; i < pt_values.size(); i++) {
+                if (abs(eta.at(i)) <= 1.479) {
+                    corrected_pt_values[i] = pt_values.at(i) * sf_barrel;
+                } else if (abs(eta.at(i)) > 1.479) {
+                    corrected_pt_values[i] = pt_values.at(i) * sf_endcap;
+                } else {
+                    corrected_pt_values[i] = pt_values.at(i);
+                }
+            }
+            return corrected_pt_values;
+        };
+    auto df1 =
+        df.Define(corrected_pt, electron_pt_correction_lambda, {pt, eta});
+    return df1;
+}
 /// Function to cut electrons based on the electron MVA ID
 ///
 /// \param[in] df the input dataframe

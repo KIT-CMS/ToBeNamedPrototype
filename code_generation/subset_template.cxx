@@ -10,6 +10,7 @@
 #include "include/met.hxx"
 #include "include/metfilter.hxx"
 #include "include/pairselection.hxx"
+#include "include/tripleselection.hxx"
 #include "include/physicsobjects.hxx"
 #include "include/quantities.hxx"
 #include "include/reweighting.hxx"

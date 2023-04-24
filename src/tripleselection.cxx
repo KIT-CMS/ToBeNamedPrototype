@@ -157,7 +157,7 @@ ROOT::RDF::RNode buildgentriple(ROOT::RDF::RNode df, const std::string &recotrip
  * @param mother_pdgid_23 the PDGID of the mother particle of the second and third particle
  * @param daughter_1_pdgid the PDGID of the first daughter particle
  * @param daughter_2_pdgid the PDGID of the second daughter particle
- * @param daughter_3_pdgid the PDGID of the second daughter particle
+ * @param daughter_3_pdgid the PDGID of the third daughter particle
  * @return auto the new Dataframe with the genpair column
  */
 ROOT::RDF::RNode
@@ -276,14 +276,13 @@ ROOT::RDF::RNode flagGoodTriples(ROOT::RDF::RNode df, const std::string &flagnam
         {triplename});
 }
 namespace three_flavor {
-
 /// Implementation of the triple selection algorithm. First, only events
 /// that contain at least two goodleptons and one goodTau are considered.
 /// Events contain at least two good leptons and one good tau, if the
-/// tau_mask the two leptonmasks have nonzero elements. These masks are
+/// the two leptonmasks have nonzero elements. These masks are
 /// constructed using the functions from the physicsobject namespace
 /// (e.g. physicsobject::CutPt). The argument triple gives information wheather the emt or the met channel is considered.
-/// Events with two good electrons or two good muons are vetos imediately.
+/// Events with two good electrons or two good muons are vetos immediately.
 /// For the fake rate estimation, base leptons are also considered.
 /// 
 /// \returns an `ROOT::RVec<int>` with three values, the first one beeing
@@ -437,14 +436,14 @@ auto TripleSelectionAlgo(const float &mindeltaR_leptau, const float &mindeltaR_l
     };
 } // end namespace TripleSelectionAlgo
 
-/// Implementation of the triple selection algorithm without considering electrons (only for signal region). First, only events
+/// Implementation of the triple selection algorithm without considering electrons to compare the results of the emt channel with the higgs to tau tau algorithm (mt channel). First, only events
 /// that contain at least two goodleptons and one goodTau are considered.
 /// Events contain at least two good leptons and one good tau, if the
 /// tau_mask the two leptonmasks have nonzero elements. These masks are
 /// constructed using the functions from the physicsobject namespace
 /// (e.g. physicsobject::CutPt).
 /// To estimate the jet to lepton fake rate, we select also events with base leptons
-/// \returns an `ROOT::RVec<int>` with two values, the first one beeing
+/// \returns an `ROOT::RVec<int>` with three values, the first one beeing
 /// the lepton from the W index, the second one beeing the lepton from the tau index and the third one the hadronic tau index.
 auto TripleSelectionWithoutEleAlgo(const float &mindeltaR_leptau) {
     Logger::get("three_flavor::TripleSelectionWithoutEleAlgo")
@@ -479,13 +478,6 @@ auto TripleSelectionWithoutEleAlgo(const float &mindeltaR_leptau) {
         // only select events with one good muon and one good electron and at least one tau
         if (original_tau_indices.size() < 1 or
             original_muon_indices.size() != 1) {
-            // Logger::get("three_flavor::TripleSelectionWithoutEleAlgo")
-            // ->debug("pt tau {}, pt ele {}, pt mu {}", tau_pt, electron_pt, muon_pt);
-            // Logger::get("three_flavor::TripleSelectionWithoutEleAlgo")
-            // ->debug("eta tau {}, eta ele {}, eta mu {}", tau_eta, electron_eta, muon_eta);
-            // Logger::get("three_flavor::TripleSelectionWithoutEleAlgo")
-            // ->debug("org tau {}, org ele {}, org mu {}", original_tau_indices.size(), original_electron_indices.size(), original_muon_indices.size());
-
             return selected_triple;
         }
         const auto selected_tau_pt =
@@ -564,11 +556,11 @@ namespace two_flavor {
 /// Implementation of the triple selection algorithm. First, only events
 /// that contain at least two goodleptons with same flavour and one goodTau are considered.
 /// Events contain at least two good leptons and one good tau, if the
-/// tau_mask the two leptonmasks have nonzero elements. These masks are
+/// the leptonmask and the taumask have nonzero elements. These masks are
 /// constructed using the functions from the physicsobject namespace
 /// (e.g. physicsobject::CutPt). The argument triple gives information wheather the emt or the met channel is considered.
 /// To estimate the jet to lepton fake rate, we select also events with base leptons
-/// \returns an `ROOT::RVec<int>` with two values, the first one beeing
+/// \returns an `ROOT::RVec<int>` with three values, the first one beeing
 /// the lepton from the W index, the second one beeing the lepton from the tau index and the third one the hadronic tau index.
 auto TripleSelectionAlgo(const float &mindeltaR_leptau, const float &mindeltaR_leplep) {
     Logger::get("two_flavor::TripleSelectionAlgo")
@@ -699,7 +691,7 @@ namespace lep_tautau {
 /// constructed using the functions from the physicsobject namespace
 /// (e.g. physicsobject::CutPt). The argument triple gives information wheather the emt or the met channel is considered.
 ///
-/// \returns an `ROOT::RVec<int>` with two values, the first one beeing
+/// \returns an `ROOT::RVec<int>` with three values, the first one beeing
 /// the lepton from the W index, the second one beeing the lepton from the tau index and the third one the hadronic tau index.
 auto TripleSelectionAlgo(const float &mindeltaR_leptau, const float &mindeltaR_tautau) {
     Logger::get("lep_tautau::TripleSelectionAlgo")
@@ -833,10 +825,15 @@ auto TripleSelectionAlgo(const float &mindeltaR_leptau, const float &mindeltaR_t
 } // end namespace TripleSelectionAlgo
 } // end namespace lep_tautau
 namespace lep1lep1_lep2 {
-
 /// Implementation of the triple selection algorithm. First, only events
-/// that contain 2 good lepton "1" and loose lepton "2" are considered.
-/// \returns an `ROOT::RVec<int>` with two values, the first one beeing
+/// that contain two good leptons lep1 and one loose lepton lep2 are considered.
+/// Events contain two good lep1 and one loose lep2, if the corresponding
+/// leptonmask have nonzero elements. These masks are
+/// constructed using the functions from the physicsobject namespace
+/// (e.g. physicsobject::CutPt). The argument triple gives information wheather the emt or the met channel is considered.
+///
+/// \returns an `ROOT::RVec<int>` with three values, the first one beeing
+/// the lepton from the W index, the second one beeing the lepton from the tau index and the third one the hadronic tau index.
 auto TripleSelectionAlgo(const float &mindeltaR_lep1lep1, const float &mindeltaR_lep1lep2) {
     Logger::get("lep1lep1_lep2::TripleSelectionAlgo")
         ->debug("Setting up algorithm");
@@ -952,7 +949,7 @@ namespace elemutau {
  *
  * @param df the input dataframe
  * @param input_vector vector of strings containing the columns needed for the
- * alogrithm. For the muTau pair selection these values are:
+ * alogrithm. For the elemuTau triple selection these values are:
     - tau_pt
     - tau_eta
     - tau_phi
@@ -965,10 +962,10 @@ namespace elemutau {
     - muon_eta
     - muon_phi
     - muon_mass
-    - electron_mask containing the flags whether the electron is a good electron
+    - electron_masks containing the flags whether the electron is a good electron or a base electron
     - tau_mask containing the flags whether the tau is a good tau or not
-    - muon_mask containing the flags whether the muon is a good muon or not
- * @param triplename name of the new column containing the pair index
+    - muon_masks containing the flags whether the muon is a good muon or a base muon
+ * @param triplename name of the new column containing the triple index
  * @param mindeltaR_leptau the seperation between each lepton and the tau has to be larger
  than
  * this value
@@ -998,7 +995,7 @@ ROOT::RDF::RNode TripleSelection(ROOT::RDF::RNode df,
  *
  * @param df the input dataframe
  * @param input_vector vector of strings containing the columns needed for the
- * alogrithm. For the muTau pair selection these values are:
+ * alogrithm. For the elemuTau triple selection these values are:
     - tau_pt
     - tau_eta
     - tau_phi
@@ -1011,17 +1008,17 @@ ROOT::RDF::RNode TripleSelection(ROOT::RDF::RNode df,
     - muon_eta
     - muon_phi
     - muon_mass
-    - electron_mask containing the flags whether the electron is a good electron
+    - electron_masks containing the flags whether the electron is a good electron or a base electron
     - tau_mask containing the flags whether the tau is a good tau or not
-    - muon_mask containing the flags whether the muon is a good muon or not
- * @param triplename name of the new column containing the pair index
+    - muon_masks containing the flags whether the muon is a good muon or a base muon
+ * @param triplename name of the new column containing the triple index
  * @param mindeltaR_leptau the seperation between each lepton and the tau has to be larger
  than
  * this value
  * @param mindeltaR_leplep the seperation between the leptons has to be larger
  than
  * this value
- * @return a new dataframe with the pair index column added
+ * @return a new dataframe with the triple index column added
  */
 ROOT::RDF::RNode TripleSelectionWOEle(ROOT::RDF::RNode df,
                                const std::vector<std::string> &input_vector,
@@ -1045,7 +1042,7 @@ namespace mueletau {
  *
  * @param df the input dataframe
  * @param input_vector vector of strings containing the columns needed for the
- * alogrithm. For the muTau pair selection these values are:
+ * alogrithm. For the mueleTau triple selection these values are:
     - tau_pt
     - tau_eta
     - tau_phi
@@ -1058,10 +1055,10 @@ namespace mueletau {
     - muon_eta
     - muon_phi
     - muon_mass
-    - electron_mask containing the flags whether the electron is a good electron
+    - electron_masks containing the flags whether the electron is a good electron or a base electron
     - tau_mask containing the flags whether the tau is a good tau or not
-    - muon_mask containing the flags whether the muon is a good muon or not
- * @param triplename name of the new column containing the pair index
+    - muon_masks containing the flags whether the muon is a good muon or a base muon
+ * @param triplename name of the new column containing the triple index
  * @param mindeltaR_leptau the seperation between each lepton and the tau has to be larger
  than
  * this value
@@ -1093,7 +1090,7 @@ namespace mumutau {
  *
  * @param df the input dataframe
  * @param input_vector vector of strings containing the columns needed for the
- * alogrithm. For the muTau pair selection these values are:
+ * alogrithm. For the mumuTau triple selection these values are:
     - tau_pt
     - tau_eta
     - tau_phi
@@ -1104,7 +1101,7 @@ namespace mumutau {
     - muon_mass
     - tau_mask containing the flags whether the tau is a good tau or not
     - muon_mask containing the flags whether the muons are a good muons or not
- * @param triplename name of the new column containing the pair index
+ * @param triplename name of the new column containing the triple index
  * @param mindeltaR_leptau the seperation between each lepton and the tau has to be larger
  than
  * this value
@@ -1133,14 +1130,14 @@ namespace mumuele {
  *
  * @param df the input dataframe
  * @param input_vector vector of strings containing the columns needed for the
- * alogrithm. For the muTau pair selection these values are:
+ * alogrithm. For the mumuele triple selection these values are:
     - muon_pts
     - muon_etas
     - muon_phis
     - muon_masses
     - ele_mask containing the flags whether the ele is a good tau or not
     - muon_mask containing the flags whether the muons are a good muons or not
- * @param triplename name of the new column containing the pair index
+ * @param triplename name of the new column containing the triple index
  * @param mindeltaR_leptau the seperation between each lepton and the tau has to be larger
  than
  * this value
@@ -1169,14 +1166,14 @@ namespace eleelemu {
  *
  * @param df the input dataframe
  * @param input_vector vector of strings containing the columns needed for the
- * alogrithm. For the muTau pair selection these values are:
+ * alogrithm. For the eleelemu triple selection these values are:
     - muon_pts
     - muon_etas
     - muon_phis
     - muon_masses
     - ele_mask containing the flags whether the ele is a good tau or not
     - muon_mask containing the flags whether the muons are a good muons or not
- * @param triplename name of the new column containing the pair index
+ * @param triplename name of the new column containing the triple index
  * @param mindeltaR_lep1lep1 the seperation between each lepton1  has to be larger
  than
  * this value
@@ -1205,7 +1202,7 @@ namespace mu_tautau {
  *
  * @param df the input dataframe
  * @param input_vector vector of strings containing the columns needed for the
- * alogrithm. For the muTau pair selection these values are:
+ * alogrithm. For the mutauTau triple selection these values are:
     - tau_pt
     - tau_eta
     - tau_phi
@@ -1216,7 +1213,7 @@ namespace mu_tautau {
     - muon_mass
     - tau_mask containing the flags whether the tau is a good tau or not
     - muon_mask containing the flags whether the muons are a good muons or not
- * @param triplename name of the new column containing the pair index
+ * @param triplename name of the new column containing the triple index
  * @param mindeltaR_leptau the seperation between each lepton and the tau has to be larger
  than
  * this value
@@ -1245,7 +1242,7 @@ namespace ele_tautau {
  *
  * @param df the input dataframe
  * @param input_vector vector of strings containing the columns needed for the
- * alogrithm. For the muTau pair selection these values are:
+ * alogrithm. For the eletautau triple selection these values are:
     - tau_pt
     - tau_eta
     - tau_phi
@@ -1256,7 +1253,7 @@ namespace ele_tautau {
     - muon_mass
     - tau_mask containing the flags whether the tau is a good tau or not
     - muon_mask containing the flags whether the muons are a good muons or not
- * @param triplename name of the new column containing the pair index
+ * @param triplename name of the new column containing the triple index
  * @param mindeltaR_leptau the seperation between each lepton and the tau has to be larger
  than
  * this value
@@ -1277,6 +1274,6 @@ ROOT::RDF::RNode TripleSelection(ROOT::RDF::RNode df,
         input_vector);
     return df1;
 }
-} // end namespace mutautau
+} // end namespace eletautau
 }// end namespace whtautau_tripleselection
 #endif /* GUARD_TRIPLESELECTION_H */

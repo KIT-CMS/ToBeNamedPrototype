@@ -117,12 +117,14 @@ ROOT::RDF::RNode buildMet(ROOT::RDF::RNode df, const std::string &met_pt,
 }
 /**
  * @brief Function used to construct the missing transverse energy lorentz
- * vector from the dileptonsystem from the Higgs boson.
+ * vector from the dileptonsystem from the Higgs boson
  *
  * @param df the input dataframe
  * @param outputname name of the new column containing the missing transverse
  * energy lorentz vector.
  * @param inputvectors a vector of the two names of the columns containing the required lorentz vectors
+ * @param p4_miss_sf the scale factor, that is applied to the di lepton system to obtain the vector of missing
+ * energy
  * @return a new df, containing the new column
  */
 /// Function to calculate the neutrino four vector from a pair of lorentz vectors (visible Higgs system) and
@@ -133,52 +135,17 @@ ROOT::RDF::RNode buildMet(ROOT::RDF::RNode df, const std::string &met_pt,
 
 ///
 /// \returns a dataframe with the new column
-ROOT::RDF::RNode p4_miss_tt(ROOT::RDF::RNode df, const std::string &outputname,
-                        const std::vector<std::string> &inputvectors) {
+ROOT::RDF::RNode p4_miss(ROOT::RDF::RNode df, const std::string &outputname,
+                        const std::vector<std::string> &inputvectors, const float &p4_miss_sf) {
     return df.Define(
         outputname,
-        [](const ROOT::Math::PtEtaPhiMVector &p4_1,
+        [p4_miss_sf](const ROOT::Math::PtEtaPhiMVector &p4_1,
            const ROOT::Math::PtEtaPhiMVector &p4_2) {
             if (p4_1.pt() < 0.0 || p4_2.pt() < 0.0)
                 return ROOT::Math::PtEtaPhiEVector(default_float,default_float,default_float,
                 default_float);;
             auto dileptonsystem = p4_1 + p4_2;
-            auto dileptonsystem_scaled = 0.47*dileptonsystem;
-            ROOT::Math::PtEtaPhiEVector neutrinos_p4 = ROOT::Math::PtEtaPhiEVector(dileptonsystem_scaled.Pt(),dileptonsystem_scaled.Eta(),dileptonsystem_scaled.Phi(),
-                dileptonsystem_scaled.E());
-            return neutrinos_p4;
-        },
-        inputvectors);
-}
-/**
- * @brief Function used to construct the missing transverse energy lorentz
- * vector from the dileptonsystem from the Higgs boson.
- *
- * @param df the input dataframe
- * @param outputname name of the new column containing the missing transverse
- * energy lorentz vector.
- * @param inputvectors a vector of the two names of the columns containing the required lorentz vectors
- * @return a new df, containing the new column
- */
-/// Function to calculate the neutrino four vector from a pair of lorentz vectors (visible Higgs system) and
-/// add it to the dataframe. see AN(HIG-19-010)
-///
-/// \param df the dataframe to add the quantity to
-/// \param outputname name of the new column containing the pt value
-
-///
-/// \returns a dataframe with the new column
-ROOT::RDF::RNode p4_miss_lt(ROOT::RDF::RNode df, const std::string &outputname,
-                        const std::vector<std::string> &inputvectors) {
-    return df.Define(
-        outputname,
-        [](const ROOT::Math::PtEtaPhiMVector &p4_1,
-           const ROOT::Math::PtEtaPhiMVector &p4_2) {
-            if (p4_1.pt() < 0.0 || p4_2.pt() < 0.0)
-                return ROOT::Math::PtEtaPhiEVector(default_float,default_float,default_float,
-                default_float);;
-            auto dileptonsystem = p4_1 + p4_2;
-            auto dileptonsystem_scaled = 0.69*dileptonsystem;
+            auto dileptonsystem_scaled = p4_miss_sf*dileptonsystem;
             ROOT::Math::PtEtaPhiEVector neutrinos_p4 = ROOT::Math::PtEtaPhiEVector(dileptonsystem_scaled.Pt(),dileptonsystem_scaled.Eta(),dileptonsystem_scaled.Phi(),
                 dileptonsystem_scaled.E());
             return neutrinos_p4;

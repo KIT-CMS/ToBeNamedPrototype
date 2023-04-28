@@ -1,6 +1,8 @@
 #ifndef GUARD_QUANTITIES_H
 #define GUARD_QUANTITIES_H
 
+// #include "../include/SVFit/FastMTT.hxx"
+// #include "../include/SVFit/MeasuredTauLepton.hxx"
 #include "../include/basefunctions.hxx"
 #include "../include/defaults.hxx"
 #include "../include/utility/Logger.hxx"
@@ -160,7 +162,7 @@ ROOT::RDF::RNode charge(ROOT::RDF::RNode df, const std::string &outputname,
 ///
 /// \returns a dataframe with the new column
 
-ROOT::RDF::RNode Lt(ROOT::RDF::RNode df, const std::string &outputname,
+ROOT::RDF::RNode scalarPtSum(ROOT::RDF::RNode df, const std::string &outputname,
                        const std::string &pt_1, const std::string &pt_2, const std::string &pt_3) {
     // build scalar sum of pts of 3 objects
     return df.Define(
@@ -220,6 +222,7 @@ ROOT::RDF::RNode deltaPhi_WH(ROOT::RDF::RNode df, const std::string &outputname,
 /// required lorentz vectors
 ///
 /// \returns a dataframe with the new column
+
 ROOT::RDF::RNode m_vis(ROOT::RDF::RNode df, const std::string &outputname,
                        const std::vector<std::string> &inputvectors) {
     // build visible mass from the two particles
@@ -234,6 +237,107 @@ ROOT::RDF::RNode m_vis(ROOT::RDF::RNode df, const std::string &outputname,
         },
         inputvectors);
 }
+
+// /**
+//  * @brief Function used to calculate the FastMTT p4 from the given inputs. The
+//  * implementation is based on
+//  * https://github.com/SVfit/ClassicSVfit/tree/fastMTT_19_02_2019
+//  *
+//  * @param df The dataframe to add the quantity to
+//  * @param outputname name of the new column containing the lorentz vector value
+//  * @param pt_1 the name of the column containing the pt of the first particle
+//  * @param pt_2 the name of the column containing the pt of the second particle
+//  * @param eta_1  the name of the column containing the eta of the first particle
+//  * @param eta_2 the name of the column containing the eta of the second particle
+//  * @param phi_1 the name of the column containing the phi of the first particle
+//  * @param phi_2 the name of the column containing the phi of the second particle
+//  * @param mass_1 the name of the column containing the mass of the first
+//  * particle
+//  * @param mass_2 the name of the column containing the mass of the second
+//  * particle
+//  * @param met_pt the name of the column containing the met pt
+//  * @param met_phi the name of the column containing the met phi
+//  * @param met_cov_xx the name of the column containing the met covariance xx
+//  * @param met_cov_xy the name of the column containing the met covariance xy
+//  * @param met_cov_yy the name of the column containing the met covariance yy
+//  * @param decay_mode_1 the name of the column containing the decay mode of the
+//  * first particle
+//  * @param decay_mode_2 the name of the column containing the decay mode of the
+//  * second particle
+//  * @param finalstate the final state of the ditaudecay. Supported are "mt",
+//  * "et", "tt", "em"
+//  * @return ROOT::RDF::RNode
+//  */
+// ROOT::RDF::RNode
+// p4_fastmtt(ROOT::RDF::RNode df, const std::string &outputname,
+//            const std::string &pt_1, const std::string &pt_2,
+//            const std::string &eta_1, const std::string &eta_2,
+//            const std::string &phi_1, const std::string &phi_2,
+//            const std::string &mass_1, const std::string &mass_2,
+//            const std::string &met_pt, const std::string &met_phi,
+//            const std::string &met_cov_xx, const std::string &met_cov_xy,
+//            const std::string &met_cov_yy, const std::string &decay_mode_1,
+//            const std::string &decay_mode_2, const std::string &finalstate) {
+//     auto calculate_fast_mtt =
+//         [finalstate](const float &pt_1, const float &pt_2, const float &eta_1,
+//                      const float &eta_2, const float &phi_1, const float &phi_2,
+//                      const float &mass_1, const float &mass_2,
+//                      const float &met_pt, const float &met_phi,
+//                      const float &met_cov_xx, const float &met_cov_xy,
+//                      const float &met_cov_yy, const int &decay_mode_1,
+//                      const int &decay_mode_2) {
+//             std::vector<fastmtt::MeasuredTauLepton> measuredTauLeptons;
+//             TMatrixD covMET(2, 2);
+//             covMET[0][0] = met_cov_xx;
+//             covMET[1][0] = met_cov_xy;
+//             covMET[0][1] = met_cov_xy;
+//             covMET[1][1] = met_cov_yy;
+//             // build the met lorentz vector
+//             ROOT::Math::PtEtaPhiMVector met(met_pt, 0.0, met_phi, 0.0);
+//             // set the decay modes according to the final state
+//             auto decay_obj_1 = fastmtt::MeasuredTauLepton::kTauToHadDecay;
+//             auto decay_obj_2 = fastmtt::MeasuredTauLepton::kTauToHadDecay;
+//             int dm_1, dm_2;
+//             if (finalstate == "mt") {
+//                 dm_1 = -1;
+//                 dm_2 = decay_mode_2;
+//                 auto decay_obj_1 = fastmtt::MeasuredTauLepton::kTauToMuDecay;
+//                 auto decay_obj_2 = fastmtt::MeasuredTauLepton::kTauToHadDecay;
+//             } else if (finalstate == "et") {
+//                 dm_1 = -1;
+//                 dm_2 = decay_mode_2;
+//                 auto decay_obj_1 = fastmtt::MeasuredTauLepton::kTauToElecDecay;
+//                 auto decay_obj_2 = fastmtt::MeasuredTauLepton::kTauToHadDecay;
+//             } else if (finalstate == "tt") {
+//                 dm_1 = decay_mode_1;
+//                 dm_2 = decay_mode_2;
+//             } else if (finalstate == "em") {
+//                 dm_1 = -1;
+//                 dm_2 = -1;
+//                 auto decay_obj_1 = fastmtt::MeasuredTauLepton::kTauToElecDecay;
+//                 auto decay_obj_2 = fastmtt::MeasuredTauLepton::kTauToMuDecay;
+//             } else {
+//                 Logger::get("FastMTT")->error(
+//                     "Final state {} not supported by FastMTT", finalstate);
+//                 return (ROOT::Math::PtEtaPhiMVector)LorentzVector();
+//             }
+//             measuredTauLeptons.push_back(fastmtt::MeasuredTauLepton(
+//                 decay_obj_1, pt_1, eta_1, phi_1, mass_1, dm_1));
+//             measuredTauLeptons.push_back(fastmtt::MeasuredTauLepton(
+//                 decay_obj_2, pt_2, eta_2, phi_2, mass_2, dm_2));
+//             FastMTT FastMTTAlgo;
+//             FastMTTAlgo.run(measuredTauLeptons, met.X(), met.Y(), covMET);
+//             LorentzVector result = FastMTTAlgo.getBestP4();
+//             // ROOT::Math::PtEtaPhiMVector result(_result.Pt(), _result.Eta(),
+//             //                                    _result.Phi(), _result.M());
+//             Logger::get("FastMTT")->debug("FastMTT result: {}", result.M());
+//             return (ROOT::Math::PtEtaPhiMVector)result;
+//         };
+//     return df.Define(outputname, calculate_fast_mtt,
+//                      {pt_1, pt_2, eta_1, eta_2, phi_1, phi_2, mass_1, mass_2,
+//                       met_pt, met_phi, met_cov_xx, met_cov_xy, met_cov_yy,
+//                       decay_mode_1, decay_mode_2});
+// }
 /// Function to calculate the visible pt from a pair of lorentz vectors and
 /// add it to the dataframe. The visible pt is calculated as the pt of the
 /// lorentz vector of the dilepton system.
@@ -270,7 +374,7 @@ ROOT::RDF::RNode pt_vis(ROOT::RDF::RNode df, const std::string &outputname,
 ///
 /// \returns a dataframe with the new column
 
-ROOT::RDF::RNode m_tt_lt(ROOT::RDF::RNode df, const std::string &outputname,
+ROOT::RDF::RNode m_tt(ROOT::RDF::RNode df, const std::string &outputname,
                         const std::vector<std::string> &inputvectors) {
     // build visible pt from the two particles
     return df.Define(
@@ -319,7 +423,7 @@ ROOT::RDF::RNode pt_123(ROOT::RDF::RNode df, const std::string &outputname,
 ///
 /// \returns a dataframe with the new column
 
-ROOT::RDF::RNode pt_W_lt(ROOT::RDF::RNode df, const std::string &outputname,
+ROOT::RDF::RNode pt_W(ROOT::RDF::RNode df, const std::string &outputname,
                         const std::vector<std::string> &inputvectors) {
     // build visible pt from the two particles
     return df.Define(
@@ -480,7 +584,7 @@ ROOT::RDF::RNode deltaR(ROOT::RDF::RNode df, const std::string &outputname,
                         const std::string &p_1_p4, const std::string &p_2_p4) {
     auto calculate_deltaR = [](ROOT::Math::PtEtaPhiMVector &p_1_p4,
                                ROOT::Math::PtEtaPhiMVector &p_2_p4) {
-        return ROOT::Math::VectorUtil::DeltaR(p_1_p4, p_2_p4);
+        return (float)ROOT::Math::VectorUtil::DeltaR(p_1_p4, p_2_p4);
     };
     return df.Define(outputname, calculate_deltaR, {p_1_p4, p_2_p4});
 }
@@ -560,6 +664,58 @@ ROOT::RDF::RNode pt_ttjj(ROOT::RDF::RNode df, const std::string &outputname,
     return df.Define(outputname, calculate_pt_ttjj,
                      {p_1_p4, p_2_p4, jet_1_p4, jet_2_p4, met});
 }
+
+// /**
+//  * @brief function used to calculate the pt two leading jets
+//  If the number of jets is less than 2, the quantity is set to 10
+//  * instead.
+//  *
+//  * @param df name of the dataframe
+//  * @param outputname name of the new column containing the pt_dijet value
+//  * @param jet_1_p4 lorentz vector of the first jet
+//  * @param jet_2_p4 lorentz vector of the second jet
+//  * @return a new dataframe with the new column
+//  */
+
+// ROOT::RDF::RNode pt_dijet(ROOT::RDF::RNode df, const std::string &outputname,
+//                           const std::string &jet_1_p4,
+//                           const std::string &jet_2_p4) {
+//     auto calculate_pt_dijet = [](ROOT::Math::PtEtaPhiMVector &jet_1_p4,
+//                                  ROOT::Math::PtEtaPhiMVector &jet_2_p4) {
+//         if (jet_1_p4.pt() < 0.0 || jet_2_p4.pt() < 0.0)
+//             return default_float;
+//         auto dijetsystem = jet_1_p4 + jet_2_p4;
+//         return (float)dijetsystem.Pt();
+//     };
+//     return df.Define(outputname, calculate_pt_dijet, {jet_1_p4, jet_2_p4});
+// }
+
+// /**
+//  * @brief function used to check the hemisphere of the two leading jets, if both
+//  jets are in the same hemisphere, the quantity is set to 1, otherwise it is set
+//  to 0. If the number of jets is less than 2, the quantity is set to 10
+//  * instead.
+//  *
+//  * @param df name of the dataframe
+//  * @param outputname name of the new column containing the jet hemisphere value
+//  * @param jet_1_p4 lorentz vector of the first jet
+//  * @param jet_2_p4 lorentz vector of the second jet
+//  * @return a new dataframe with the new column
+//  */
+
+// ROOT::RDF::RNode jet_hemisphere(ROOT::RDF::RNode df,
+//                                 const std::string &outputname,
+//                                 const std::string &jet_1_p4,
+//                                 const std::string &jet_2_p4) {
+//     auto calculate_jet_hemisphere = [](ROOT::Math::PtEtaPhiMVector &jet_1_p4,
+//                                        ROOT::Math::PtEtaPhiMVector &jet_2_p4) {
+//         if (jet_1_p4.pt() < 0.0 || jet_2_p4.pt() < 0.0)
+//             return default_int;
+//         return (int)(jet_1_p4.Eta() * jet_2_p4.Eta() > 0);
+//     };
+//     return df.Define(outputname, calculate_jet_hemisphere,
+//                      {jet_1_p4, jet_2_p4});
+// }
 
 /**
  * @brief function used to calculate `mt_tot`. It is defined as
@@ -815,9 +971,6 @@ namespace muon {
 ROOT::RDF::RNode id(ROOT::RDF::RNode df, const std::string &outputname,
                     const int &position, const std::string &pairname,
                     const std::string &idcolumn) {
-    Logger::get("muonIDflag")
-                ->debug(
-                    "muon ID  {}", position);
     return df.Define(
         outputname,
         [position](const ROOT::RVec<int> &pair, const ROOT::RVec<bool> &id) {
@@ -839,9 +992,6 @@ ROOT::RDF::RNode id(ROOT::RDF::RNode df, const std::string &outputname,
 ROOT::RDF::RNode is_global(ROOT::RDF::RNode df, const std::string &outputname,
                            const int &position, const std::string &pairname,
                            const std::string &globalflagcolumn) {
-    Logger::get("muonIsGlobalflag")
-                ->debug(
-                    "is global pos {}", position);
     return df.Define(outputname,
                      [position](const ROOT::RVec<int> &pair,
                                 const ROOT::RVec<bool> &globalflag) {

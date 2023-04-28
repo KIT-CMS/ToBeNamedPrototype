@@ -24,13 +24,13 @@ ROOT::RDF::RNode dz(ROOT::RDF::RNode df, const std::string &outputname,
 ROOT::RDF::RNode charge(ROOT::RDF::RNode df, const std::string &outputname,
                         const int &position, const std::string &pairname,
                         const std::string &chargecolumn);
-ROOT::RDF::RNode Lt(ROOT::RDF::RNode df, const std::string &outputname,
+ROOT::RDF::RNode scalarPtSum(ROOT::RDF::RNode df, const std::string &outputname,
                        const std::string &pt_1, const std::string &pt_2, const std::string &pt_3);
 ROOT::RDF::RNode m_vis(ROOT::RDF::RNode df, const std::string &outputname,
                        const std::vector<std::string> &inputvectors);
-ROOT::RDF::RNode m_tt_lt(ROOT::RDF::RNode df, const std::string &outputname,
+ROOT::RDF::RNode m_tt(ROOT::RDF::RNode df, const std::string &outputname,
                         const std::vector<std::string> &inputvectors);
-ROOT::RDF::RNode pt_W_lt(ROOT::RDF::RNode df, const std::string &outputname,
+ROOT::RDF::RNode pt_W(ROOT::RDF::RNode df, const std::string &outputname,
                         const std::vector<std::string> &inputvectors);
 ROOT::RDF::RNode pt_vis(ROOT::RDF::RNode df, const std::string &outputname,
                         const std::vector<std::string> &inputvectors);
@@ -38,6 +38,24 @@ ROOT::RDF::RNode eta_vis(ROOT::RDF::RNode df, const std::string &outputname,
                         const std::vector<std::string> &inputvectors);
 ROOT::RDF::RNode phi_vis(ROOT::RDF::RNode df, const std::string &outputname,
                         const std::vector<std::string> &inputvectors);
+ROOT::RDF::RNode deltaPhi(ROOT::RDF::RNode df, const std::string &outputname,
+                        const std::string &p_1_p4, const std::string &p_2_p4);
+ROOT::RDF::RNode deltaPhi_WH(ROOT::RDF::RNode df, const std::string &outputname,
+                        const std::string &p_1_p4, const std::string &p_2_p4, const std::string &p_3_p4);
+ROOT::RDF::RNode pt_123(ROOT::RDF::RNode df, const std::string &outputname,
+                        const std::vector<std::string> &inputvectors);
+// ROOT::RDF::RNode
+// p4_fastmtt(ROOT::RDF::RNode df, const std::string &outputname,
+//            const std::string &pt_1, const std::string &pt_2,
+//            const std::string &eta_1, const std::string &eta_2,
+//            const std::string &phi_1, const std::string &phi_2,
+//            const std::string &mass_1, const std::string &mass_2,
+//            const std::string &met_pt, const std::string &met_phi,
+//            const std::string &met_cov_xx, const std::string &met_cov_xy,
+//            const std::string &met_cov_yy, const std::string &decay_mode_1,
+//            const std::string &decay_mode_2, const std::string &finalstate);
+// ROOT::RDF::RNode pt_vis(ROOT::RDF::RNode df, const std::string &outputname,
+//                         const std::vector<std::string> &inputvectors);
 ROOT::RDF::RNode pzetamissvis(ROOT::RDF::RNode df,
                               const std::string &outputname,
                               const std::string &p_1_p4,
@@ -50,12 +68,6 @@ ROOT::RDF::RNode mTdileptonMET(ROOT::RDF::RNode df,
                                const std::string &met);
 ROOT::RDF::RNode deltaR(ROOT::RDF::RNode df, const std::string &outputname,
                         const std::string &p_1_p4, const std::string &p_2_p4);
-ROOT::RDF::RNode deltaPhi(ROOT::RDF::RNode df, const std::string &outputname,
-                        const std::string &p_1_p4, const std::string &p_2_p4);
-ROOT::RDF::RNode deltaPhi_WH(ROOT::RDF::RNode df, const std::string &outputname,
-                        const std::string &p_1_p4, const std::string &p_2_p4, const std::string &p_3_p4);
-ROOT::RDF::RNode pt_123(ROOT::RDF::RNode df, const std::string &outputname,
-                        const std::vector<std::string> &inputvectors);
 ROOT::RDF::RNode mT(ROOT::RDF::RNode df, const std::string &outputname,
                     const std::string &particle_p4, const std::string &met);
 ROOT::RDF::RNode pt_tt(ROOT::RDF::RNode df, const std::string &outputname,
@@ -65,6 +77,13 @@ ROOT::RDF::RNode pt_ttjj(ROOT::RDF::RNode df, const std::string &outputname,
                          const std::string &p_1_p4, const std::string &p_2_p4,
                          const std::string &jet_1_p4,
                          const std::string &jet_2_p4, const std::string &met);
+// ROOT::RDF::RNode pt_dijet(ROOT::RDF::RNode df, const std::string &outputname,
+//                           const std::string &jet_1_p4,
+//                           const std::string &jet_2_p4);
+// ROOT::RDF::RNode jet_hemisphere(ROOT::RDF::RNode df,
+//                                 const std::string &outputname,
+//                                 const std::string &jet_1_p4,
+//                                 const std::string &jet_2_p4);
 ROOT::RDF::RNode mt_tot(ROOT::RDF::RNode df, const std::string &outputname,
                         const std::string &p_1_p4, const std::string &p_2_p4,
                         const std::string &met);
@@ -105,9 +124,6 @@ ROOT::RDF::RNode id(ROOT::RDF::RNode df, const std::string &outputname,
 ROOT::RDF::RNode is_global(ROOT::RDF::RNode df, const std::string &outputname,
                            const int &position, const std::string &pairname,
                            const std::string &globalflagcolumn);
-ROOT::RDF::RNode is_tracker(ROOT::RDF::RNode df, const std::string &outputname,
-                           const int &position, const std::string &pairname,
-                           const std::string &trackerflagcolumn);
 } // namespace muon
 namespace electron {
 ROOT::RDF::RNode id(ROOT::RDF::RNode df, const std::string &outputname,

@@ -68,6 +68,16 @@ Trigger
 .. doxygennamespace:: trigger
    :members:
 
+Topreco
+***************
+.. doxygennamespace:: topreco
+   :members:
+
+FakeFactors
+***************
+.. doxygennamespace:: fakefactors
+   :members:
+
 
 Vectoroperations
 ******************

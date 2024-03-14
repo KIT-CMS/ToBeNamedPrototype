@@ -165,6 +165,10 @@ ROOT::RDF::RNode AntiCutCBID(ROOT::RDF::RNode df, const std::string &maskname,
 ROOT::RDF::RNode CutIsolation(ROOT::RDF::RNode df, const std::string &maskname,
                               const std::string &isolationName,
                               const float &Threshold);
+ROOT::RDF::RNode AntiCutIsolation(ROOT::RDF::RNode df,
+                                  const std::string &maskname,
+                                  const std::string &isolationName,
+                                  const float &Threshold);
 ROOT::RDF::RNode CutIP(ROOT::RDF::RNode df, const std::string &eta,
                        const std::string &detasc, const std::string &dxy,
                        const std::string &dz, const std::string &maskname,
@@ -175,6 +179,8 @@ ROOT::RDF::RNode CutIP(ROOT::RDF::RNode df, const std::string &eta,
 ROOT::RDF::RNode CutGap(ROOT::RDF::RNode df, const std::string &eta,
                         const std::string &detasc, const std::string &maskname,
                         const float &end_eb, const float &start_ee);
+
+ROOT::RDF::RNode CutCBIDBitmapNoIso(ROOT::RDF::RNode df, const std::string &maskname, const int &IDvalue, const std::string &bitmap);
 
 } // end namespace electron
 } // namespace physicsobject

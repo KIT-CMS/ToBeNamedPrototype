@@ -347,7 +347,6 @@ class CodeGenerator(object):
                 )
                 .replace("{ANALYSISTAG}", '"Analysis={}"'.format(self.analysis_name))
                 .replace("{CONFIGTAG}", '"Config={}"'.format(self.config_name))
-                .replace("{PROGRESS_CALLBACK}", self.set_process_tracking())
                 .replace("{OUTPUT_QUANTITIES}", self.set_output_quantities())
                 .replace("{SHIFT_QUANTITIES_MAP}", self.set_shift_quantities_map())
                 .replace("{QUANTITIES_SHIFT_MAP}", self.set_quantities_shift_map())
@@ -548,8 +547,6 @@ class CodeGenerator(object):
                     outputname=self._outputfiles_generated[scope],
                     outputstring=outputstring,
                 )
-        # add code for tracking the progress
-        runcommands += self.set_process_tracking()
         # add code for the time taken for the dataframe setup
         runcommands += self.set_setup_printout()
         # add trigger of dataframe execution, for nonempty scopes
@@ -683,37 +680,6 @@ class CodeGenerator(object):
             )
 
         return printout
-
-    def set_process_tracking(self) -> str:
-        """This function replaces the template placeholder for the process tracking with the correct process tracking.
-
-        Returns:
-            The code to be added to the template
-        """
-        tracking = ""
-        scope = self.scopes[-1]
-        tracking += "        ULong64_t {scope}_processed = 0;\n".format(scope=scope)
-        tracking += "        std::mutex {scope}_bar_mutex;\n".format(scope=scope)
-        tracking += "        auto c_{scope} = df{counter}_{scope}.Count();\n".format(
-            counter=self.main_counter[scope], scope=scope
-        )
-        tracking += "        c_{scope}.OnPartialResultSlot(quantile, [&{scope}_bar_mutex, &{scope}_processed, &quantile, &nevents](unsigned int /*slot*/, ULong64_t /*_c*/) {{".format(
-            scope=scope
-        )
-        tracking += (
-            "\n            std::lock_guard<std::mutex> lg({scope}_bar_mutex);\n".format(
-                scope=scope
-            )
-        )
-        tracking += "            {scope}_processed += quantile;\n".format(scope=scope)
-        tracking += "            float percentage = 100 * (float){scope}_processed / (float)nevents;\n".format(
-            scope=scope
-        )
-        tracking += '            Logger::get("main")->info("{{0:d}} / {{1:d}} ({{2:.2f}} %) Events processed ...", {scope}_processed, nevents, percentage);\n'.format(
-            scope=scope
-        )
-        tracking += "        });\n"
-        return tracking
 
     def set_shift_quantities_map(self) -> str:
         """

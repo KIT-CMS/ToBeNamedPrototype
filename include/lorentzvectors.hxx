@@ -13,6 +13,19 @@ ROOT::RDF::RNode buildparticle(ROOT::RDF::RNode df,
                                const std::vector<std::string> &quantities,
                                const std::string &outputname,
                                const int &position);
+ROOT::RDF::RNode BuildP4Collection(ROOT::RDF::RNode df,
+                                   const std::string &outputname,
+                                   const std::string &pts,
+                                   const std::string &etas,
+                                   const std::string &phis,
+                                   const std::string &masses,
+                                   const std::string &collection_index);
+ROOT::RDF::RNode BuildP4Collection(ROOT::RDF::RNode df,
+                                          const std::string &outputname,
+                                          const std::string &pts,
+                                          const std::string &etas,
+                                          const std::string &phis,
+                                          const std::string &masses);
 ROOT::RDF::RNode build(ROOT::RDF::RNode df,
                        const std::vector<std::string> &obj_quantities,
                        const int pairindex, const std::string &obj_p4_name);

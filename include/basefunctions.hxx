@@ -141,6 +141,100 @@ inline ROOT::RDF::RNode DefineQuantity(ROOT::RDF::RNode df,
                                        T const &value) {
     return df.Define(outputname, [value]() { return value; }, {});
 }
+
+/// Function to sum all elements of the column with name `quantity` with `ROOT::VecOps::RVec<T>`
+/// objects.
+///
+/// This function is a template implementation, i.e. call SumPerEvent<T> if the column
+/// `quantity` contains ROOT::VecOps::RVec<T> objects.
+///
+/// Elements of the `ROOT::VecOps::RVec<T>`, which should enter the sum, can be selected with
+/// index lists from the column `collection_index` as `ROOT::VecOps::RVec<int>` objects
+/// per entry.
+///
+/// Internally, `ROOT::VecOps::Sum` is used to calculate the sum. A custom zero element, which is
+/// a second optional argument of `ROOT::VecOps::Sum`, can be passed to this function with setting
+/// the parameter `zero`. Its default value is `T(0)`. For instance, when dealing with
+/// `ROOT::Math::PtEtaPhiMVector` objects, the `zero` parameter must be set to
+/// `ROOT::Math::PtEtaPhiMVector(0., 0., 0., 0)` in order to enable summation with this function.
+///
+/// \param df Input dataframe
+/// \param outputname name of the output column
+/// \param quantity column name of the vector variable which is summed per entry
+/// \param collection_index column name for index lists of the elements which are going to be summed up
+/// \param zero zero element passed as second argument to the `ROOT::VecOps::Sum` function
+///
+/// \returns a dataframe with the new column
+template <typename T>
+inline ROOT::RDF::RNode SumPerEvent(ROOT::RDF::RNode df,
+                                    const std::string &outputname,
+                                    const std::string &quantity,
+                                    const std::string &collection_index,
+                                    const T zero = T(0)) {
+    auto sum_per_event = [zero](const ROOT::RVec<T> &quantity, const ROOT::RVec<int> &collection_index) {
+        Logger::get("SumPerEvent")->debug(
+                    "sum values {} at indices {}", quantity, collection_index);
+        T sum = ROOT::VecOps::Sum(ROOT::VecOps::Take(quantity, collection_index), zero);
+        Logger::get("SumPerEvent")->debug(
+                    "sum {}", sum);
+        return sum;
+    };
+    return df.Define(outputname, sum_per_event, {quantity, collection_index});
+}
+
+/// Function to sum all elements of the column with name `quantity` with `ROOT::VecOps::RVec<T>`
+/// objects.
+///
+/// This function is a template implementation, i.e. call SumPerEvent<T> if the column
+/// `quantity` contains ROOT::VecOps::RVec<T> objects.
+///
+/// Internally, `ROOT::VecOps::Sum` is used to calculate the sum. A custom zero element, which is
+/// a second optional argument of `ROOT::VecOps::Sum`, can be passed to this function with setting
+/// the parameter `zero`. Its default value is `T(0)`.
+///
+/// \param df Input dataframe
+/// \param outputname name of the output column
+/// \param quantity column name of the vector variable which is summed per entry
+/// \param zero zero element passed as second argument to the `ROOT::VecOps::Sum` function
+///
+/// \returns a dataframe with the new column
+template <typename T>
+inline ROOT::RDF::RNode SumPerEvent(ROOT::RDF::RNode df,
+                                    const std::string &outputname,
+                                    const std::string &quantity,
+                                    const T zero = T(0)) {
+    auto sum_per_event = [zero](const ROOT::RVec<T> &quantity) {
+        Logger::get("SumPerEvent")->debug(
+                    "sum values {}", quantity);
+        T sum = ROOT::VecOps::Sum(quantity, zero);
+        Logger::get("SumPerEvent")->debug(
+                    "sum {}", sum);
+        return sum;
+    };
+    return df.Define(outputname, sum_per_event, {quantity});
+}
+
+/// This function creates a new column `outputname` with the negatives of type of the values
+/// in the column `inputname`.
+///
+/// Note that this function is implemented as a template, so specify the type `T` of the objects
+/// in the input column when calling this function with `Negative<T>(...)`.
+///
+/// \param df Input dataframe
+/// \param outputname name of the output column
+/// \param inputname column name of the input column
+///
+/// \returns a dataframe with the new column
+template <typename T>
+inline ROOT::RDF::RNode Negative(ROOT::RDF::RNode df,
+                                 const std::string &outputname,
+                                 const std::string &inputname) {
+    auto negative = [](const T &input) {
+        return -input;
+    };
+    return df.Define(outputname, negative, {inputname});
+}
+
 /// This function filters events, where neither of the input flags is true.
 /// This is used to filter events which do not pass an underlying requirement in
 /// any systematic variation.

@@ -70,6 +70,85 @@ ROOT::RDF::RNode buildparticle(ROOT::RDF::RNode df,
 }
 
 /**
+ * @brief Build a new column with a collection of Lorentz vectors per dataframe entry, which are
+ * created from the pt, eta, phi and mass columns of a collection.
+ *
+ * For instance, this can be used to create four-vector objects from the four-vector component
+ * columns of a NanoAOD collection.
+ *
+ * The function expects pt, eta phi and mass columns, which contain `ROOT::VecOps::RVec<float>`
+ * objects. In addition, the argument `collection_index` must point to a column which contains
+ * index lists of type `ROOT::VecOps::RVec<int>`. These index lists contain the indices of
+ * elements, for which four-vectors are built. The output column contains collections of
+ * four-vectors `ROOT::VecOps::RVec<PtEtaPhiMVector>`. The output collection only contains
+ * the elements, which have been selected in the `collection_index` list.
+ *
+ * @param df Input dataframe
+ * @param outputname name of the output column
+ * @param pts column name with the pt values of the collection's objects
+ * @param etas column name with the eta values of the collection's objects
+ * @param phis column name with the phi values of the collection's objects
+ * @param masses column name with the mass values of the collection's objects
+ * @param collection_index column name for index lists of the elements for which four-vectors are built
+ *
+ * @return a dataframe with the new column
+ */
+ROOT::RDF::RNode BuildP4Collection(ROOT::RDF::RNode df,
+                                   const std::string &outputname,
+                                   const std::string &pts,
+                                   const std::string &etas,
+                                   const std::string &phis,
+                                   const std::string &masses,
+                                   const std::string &collection_index) {
+    auto build_collection_p4 = [](const ROOT::RVec<float> &pts,
+                                  const ROOT::RVec<float> &etas,
+                                  const ROOT::RVec<float> &phis,
+                                  const ROOT::RVec<float> &masses,
+                                  const ROOT::RVec<int> &collection_index) {
+        auto pts_ = ROOT::VecOps::Take(pts, collection_index);
+        auto etas_ = ROOT::VecOps::Take(etas, collection_index);
+        auto phis_ = ROOT::VecOps::Take(phis, collection_index);
+        auto masses_ = ROOT::VecOps::Take(masses, collection_index);
+        return ROOT::VecOps::Construct<ROOT::Math::PtEtaPhiMVector>(pts_, etas_, phis_, masses_);
+    };
+    return df.Define(outputname, build_collection_p4, {pts, etas, phis, masses, collection_index});
+}
+
+/** 
+ * @brief Build a new column with a collection of Lorentz vectors per dataframe entry, which are
+ * created from the pt, eta, phi and mass columns of a collection.
+ *
+ * For instance, this can be used to create four-vector objects from the four-vector component
+ * columns of a NanoAOD collection.
+ *
+ * The function expects pt, eta phi and mass columns, which contain `ROOT::VecOps::RVec<float>`
+ * objects. The output column contains four-vectors `ROOT::VecOps::RVec<PtEtaPhiMVector>`.
+ *
+ * @param df Input dataframe
+ * @param outputname name of the output column
+ * @param pts column name with the pt values of the collection's objects
+ * @param etas column name with the eta values of the collection's objects
+ * @param phis column name with the phi values of the collection's objects
+ * @param masses column name with the mass values of the collection's objects
+ *
+ * @return a dataframe with the new column
+ */
+ROOT::RDF::RNode BuildP4Collection(ROOT::RDF::RNode df,
+                                          const std::string &outputname,
+                                          const std::string &pts,
+                                          const std::string &etas,
+                                          const std::string &phis,
+                                          const std::string &masses) {
+    auto build_collection_p4 = [](const ROOT::RVec<float> &pts,
+                                  const ROOT::RVec<float> &etas,
+                                  const ROOT::RVec<float> &phis,
+                                  const ROOT::RVec<float> &masses) {
+        return ROOT::VecOps::Construct<ROOT::Math::PtEtaPhiMVector>(pts, etas, phis, masses);
+    };
+    return df.Define(outputname, build_collection_p4, {pts, etas, phis, masses});
+}
+
+/**
  * @brief Function used to construct a 4-vector for a pair particle.
  *
  * @param df the input dataframe

@@ -47,3 +47,5 @@ FlameGraph/
 *.pl
 perf.data
 perf.data.old
+
+*.log

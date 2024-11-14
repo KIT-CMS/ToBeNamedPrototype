@@ -437,7 +437,7 @@ raw_fakefactor_sm_lt(
     auto wjets = correction::CorrectionSet::from_file(ff_file)->at("Wjets_fake_factors");
     auto ttbar = correction::CorrectionSet::from_file(ff_file)->at("ttbar_fake_factors");
     auto fractions = correction::CorrectionSet::from_file(ff_file)->at("process_fractions");
-    
+
     auto calc_fake_factor = [
         qcd, wjets, ttbar, fractions,
         qcd_variation, wjets_variation, ttbar_variation, fraction_variation](
@@ -448,9 +448,9 @@ raw_fakefactor_sm_lt(
             Logger::get("SM RawFakeFactor (lt)")->debug("N jets - value {}", njets);
 
             float qcd_ff = qcd->evaluate({pt_2, (float)njets, qcd_variation});
-            float wjets_ff = wjets->evaluate({pt_2, (float)njets, delta_r, wjets_variation});
+            float wjets_ff = wjets->evaluate({pt_2,  delta_r, (float)njets, wjets_variation});
             float ttbar_ff = ttbar->evaluate({pt_2, (float)njets, ttbar_variation});
-            
+
             Logger::get("SM RawFakeFactor (lt)")->debug("QCD - value {}", qcd_ff);
             Logger::get("SM RawFakeFactor (lt)")->debug("Wjets - value {}", wjets_ff);
             Logger::get("SM RawFakeFactor (lt)")->debug("ttbar - value {}", ttbar_ff);
@@ -461,7 +461,7 @@ raw_fakefactor_sm_lt(
             float qcd_frac = fractions->evaluate({"QCD", mt_1, (float)njets, fraction_variation});
             float wjets_frac = fractions->evaluate({"Wjets", mt_1, (float)njets, fraction_variation});
             float ttbar_frac = fractions->evaluate({"ttbar", mt_1, (float)njets, fraction_variation});
-            
+
             Logger::get("SM RawFakeFactor (lt)")->debug("QCD - fraction {}", qcd_frac);
             Logger::get("SM RawFakeFactor (lt)")->debug("Wjets - fraction {}", wjets_frac);
             Logger::get("SM RawFakeFactor (lt)")->debug("ttbar - fraction {}", ttbar_frac);
@@ -594,7 +594,7 @@ fakefactor_sm_lt(
             Logger::get("SM FaceFactor (lt)")->debug("N jets - value {}", njets);
 
             float qcd_ff = qcd->evaluate({pt_2, (float)njets, qcd_variation});
-            float wjets_ff = wjets->evaluate({pt_2, (float)njets, delta_r, wjets_variation});
+            float wjets_ff = wjets->evaluate({pt_2, delta_r, (float)njets, wjets_variation});
             float ttbar_ff = ttbar->evaluate({pt_2, (float)njets, ttbar_variation});
 
             Logger::get("SM FaceFactor (lt)")->debug("QCD - value {}", qcd_ff);
@@ -683,10 +683,10 @@ raw_fakefactor_sm_tt(
     const std::string &ff_file
 ) {
 
-    Logger::get("SM RawFrakeFactor (tt)")->debug("Setting up functions for raw fake factor (without corrections) evaluation with correctionlib");
+    Logger::get("SM RawFakeFactor (tt)")->debug("Setting up functions for raw fake factor (without corrections) evaluation with correctionlib");
 
-    Logger::get("SM RawFrakeFactor (tt)")->debug("QCD variation - Name {}", qcd_variation);
-    Logger::get("SM RawFrakeFactor (tt)")->debug("Fraction variation - Name {}", fraction_variation);
+    Logger::get("SM RawFakeFactor (tt)")->debug("QCD variation - Name {}", qcd_variation);
+    Logger::get("SM RawFakeFactor (tt)")->debug("Fraction variation - Name {}", fraction_variation);
 
     auto qcd = correction::CorrectionSet::from_file(ff_file)->at("QCD_fake_factors");
     auto qcd_subleading = correction::CorrectionSet::from_file(ff_file)->at("QCD_subleading_fake_factors");
@@ -702,31 +702,38 @@ raw_fakefactor_sm_tt(
         const int &njets, const float &m_vis) {
         float ff = -1.;
         if (pt_2 >= 0.) {
-            Logger::get("SM RawFrakeFactor (tt)")->debug("Leading Tau pt - value {}", pt_1);
-            Logger::get("SM RawFrakeFactor (tt)")->debug("Subleading Tau pt - value {}", pt_2);
-            Logger::get("SM RawFrakeFactor (tt)")->debug("N jets - value {}", njets);
+            Logger::get("SM RawFakeFactor (tt)")->debug("Leading Tau pt - value {}", pt_1);
+            Logger::get("SM RawFakeFactor (tt)")->debug("Subleading Tau pt - value {}", pt_2);
+            Logger::get("SM RawFakeFactor (tt)")->debug("N jets - value {}", njets);
 
             float qcd_ff = -1.;
+            float qcd_frac = -1.;
             if (tau_idx == 0) {
                 float qcd_ff = qcd->evaluate({pt_1, (float)njets, qcd_variation});
                 float qcd_frac = fractions->evaluate({"QCD", m_vis, (float)njets, fraction_variation});
                 
-                Logger::get("SM RawFrakeFactor (tt)")->debug("QCD - value {}", qcd_ff);
-                Logger::get("SM RawFrakeFactor (tt)")->debug("QCD - fraction {}", qcd_frac);
+                Logger::get("SM RawFakeFactor (tt)")->debug("qcd_variation {}", qcd_variation);
+                Logger::get("SM RawFakeFactor (tt)")->debug("fraction_variation {}", fraction_variation);
+                Logger::get("SM RawFakeFactor (tt)")->debug("tau_idx {}", tau_idx);
+                Logger::get("SM RawFakeFactor (tt)")->debug("QCD - value {}", qcd_ff);
+                Logger::get("SM RawFakeFactor (tt)")->debug("QCD - fraction {}", qcd_frac);
 
                 ff = qcd_frac * std::max(qcd_ff, (float)0.);
             } else if (tau_idx == 1) {
                 float qcd_ff = qcd_subleading->evaluate({pt_2, (float)njets, qcd_variation});
                 float qcd_frac = fractions_subleading->evaluate({"QCD", m_vis, (float)njets, fraction_variation});
                 
-                Logger::get("SM RawFrakeFactor (tt)")->debug("QCD - value {}", qcd_ff);
-                Logger::get("SM RawFrakeFactor (tt)")->debug("QCD - fraction {}", qcd_frac);
+                Logger::get("SM RawFakeFactor (tt)")->debug("qcd_variation {}", qcd_variation);
+                Logger::get("SM RawFakeFactor (tt)")->debug("fraction_variation {}", fraction_variation);
+                Logger::get("SM RawFakeFactor (tt)")->debug("tau_idx {}", tau_idx);
+                Logger::get("SM RawFakeFactor (tt)")->debug("QCD - value {}", qcd_ff);
+                Logger::get("SM RawFakeFactor (tt)")->debug("QCD - fraction {}", qcd_frac);
 
                 ff = qcd_frac * std::max(qcd_ff, (float)0.);
             }
         }
 
-        Logger::get("SM RawFrakeFactor (tt)")->debug("Event Fake Factor {}", ff);
+        Logger::get("SM RawFakeFactor (tt)")->debug("Event Fake Factor {}", ff);
         
         return ff;
     };
@@ -776,13 +783,13 @@ fakefactor_sm_tt(
     const std::string &ff_corr_file
 ) {
 
-    Logger::get("SM FrakeFactor (tt)")->debug("Setting up functions for fake factor evaluation with correctionlib");
+    Logger::get("SM FakeFactor (tt)")->debug("Setting up functions for fake factor evaluation with correctionlib");
     
-    Logger::get("SM FrakeFactor (tt)")->debug("Fraction Variation - Name {}", fraction_variation);
-    Logger::get("SM FrakeFactor (tt)")->debug("QCD Variation - Name {}", qcd_variation);
-    Logger::get("SM FrakeFactor (tt)")->debug("QCD lep pt correction Variation - Name {}", qcd_corr_leppt_variation);
-    Logger::get("SM FrakeFactor (tt)")->debug("QCD DR to SR correction Variation - Name {}", qcd_corr_drsr_variation);
-    Logger::get("SM FrakeFactor (tt)")->debug("QCD m_vis correction Variation - Name {}", qcd_corr_m_vis_variation);
+    Logger::get("SM FakeFactor (tt)")->debug("Fraction Variation - Name {}", fraction_variation);
+    Logger::get("SM FakeFactor (tt)")->debug("QCD Variation - Name {}", qcd_variation);
+    Logger::get("SM FakeFactor (tt)")->debug("QCD lep pt correction Variation - Name {}", qcd_corr_leppt_variation);
+    Logger::get("SM FakeFactor (tt)")->debug("QCD DR to SR correction Variation - Name {}", qcd_corr_drsr_variation);
+    Logger::get("SM FakeFactor (tt)")->debug("QCD m_vis correction Variation - Name {}", qcd_corr_m_vis_variation);
 
     auto qcd = correction::CorrectionSet::from_file(ff_file)->at("QCD_fake_factors");
     auto qcd_subleading = correction::CorrectionSet::from_file(ff_file)->at("QCD_subleading_fake_factors");
@@ -813,10 +820,10 @@ fakefactor_sm_tt(
         const int &njets, const float &m_vis) {
         float ff = 0.;
         if (pt_2 >= 0.) {
-            Logger::get("SM FrakeFactor (tt)")->debug("Leading Tau pt - value {}", pt_1);
-            Logger::get("SM FrakeFactor (tt)")->debug("Subleading Tau pt - value {}", pt_2);
-            Logger::get("SM FrakeFactor (tt)")->debug("m_vis - value {}", m_vis);
-            Logger::get("SM FrakeFactor (tt)")->debug("N jets - value {}", njets);
+            Logger::get("SM FakeFactor (tt)")->debug("Leading Tau pt - value {}", pt_1);
+            Logger::get("SM FakeFactor (tt)")->debug("Subleading Tau pt - value {}", pt_2);
+            Logger::get("SM FakeFactor (tt)")->debug("m_vis - value {}", m_vis);
+            Logger::get("SM FakeFactor (tt)")->debug("N jets - value {}", njets);
 
             float qcd_ff = -1.;
             float qcd_tau_pt_corr = -1.;
@@ -826,36 +833,40 @@ fakefactor_sm_tt(
             if (tau_idx == 0) {
                 float qcd_ff = qcd->evaluate({pt_1, (float)njets, qcd_variation});
                 float qcd_frac = fractions->evaluate({"QCD", m_vis, (float)njets, fraction_variation});
+                
                 float qcd_tau_pt_corr = qcd_tau_pt_closure->evaluate({pt_2, qcd_corr_leppt_variation});
                 float qcd_m_vis_corr = qcd_m_vis_closure->evaluate({m_vis, qcd_corr_m_vis_variation});
                 float qcd_DR_SR_corr = qcd_DR_SR->evaluate({m_vis, qcd_corr_drsr_variation});
                 
-                Logger::get("SM FrakeFactor (tt)")->debug("QCD - value {}", qcd_ff);
-                Logger::get("SM FrakeFactor (tt)")->debug("QCD - fraction {}", qcd_frac);
-                Logger::get("SM FrakeFactor (tt)")->debug("QCD - lep pt correction {}", qcd_tau_pt_corr);
-                Logger::get("SM FrakeFactor (tt)")->debug("QCD - visible mass correction {}", qcd_m_vis_corr);
-                Logger::get("SM FrakeFactor (tt)")->debug("QCD - DR to SR correction {}", qcd_DR_SR_corr);
+                Logger::get("SM FakeFactor (tt)")->debug("QCD - leading value {}", qcd_ff);
+                Logger::get("SM FakeFactor (tt)")->debug("QCD - leading fraction {}", qcd_frac);
 
+                Logger::get("SM FakeFactor (tt)")->debug("QCD - leading lep pt correction {}", qcd_tau_pt_corr);
+                Logger::get("SM FakeFactor (tt)")->debug("QCD - visible mass correction {}", qcd_m_vis_corr);
+                Logger::get("SM FakeFactor (tt)")->debug("QCD - DR to SR correction {}", qcd_DR_SR_corr);
+                
                 ff = qcd_frac * std::max(qcd_ff, (float)0.) * qcd_tau_pt_corr * qcd_m_vis_corr * qcd_DR_SR_corr;
 
             } else if (tau_idx == 1) {
                 float qcd_ff = qcd_subleading->evaluate({pt_2, (float)njets, qcd_variation});
                 float qcd_frac = fractions_subleading->evaluate({"QCD", m_vis, (float)njets, fraction_variation});
+                
                 float qcd_tau_pt_corr = qcd_tau_pt_closure_subleading->evaluate({pt_1, qcd_corr_leppt_variation});
                 float qcd_m_vis_corr = qcd_m_vis_closure_subleading->evaluate({m_vis, qcd_corr_m_vis_variation});
                 float qcd_DR_SR_corr = qcd_DR_SR_subleading->evaluate({m_vis, qcd_corr_drsr_variation});
 
-                Logger::get("SM FrakeFactor (tt)")->debug("QCD(subleading) - value {}", qcd_ff);
-                Logger::get("SM FrakeFactor (tt)")->debug("QCD(subleading) - fraction {}", qcd_frac);
-                Logger::get("SM FrakeFactor (tt)")->debug("QCD(subleading) - lep pt correction {}", qcd_tau_pt_corr);
-                Logger::get("SM FrakeFactor (tt)")->debug("QCD(subleading) - visible mass correction {}", qcd_m_vis_corr);
-                Logger::get("SM FrakeFactor (tt)")->debug("QCD(subleading) - DR to SR correction {}", qcd_DR_SR_corr);
+                Logger::get("SM FakeFactor (tt)")->debug("QCD - subleading value {}", qcd_ff);
+                Logger::get("SM FakeFactor (tt)")->debug("QCD - subleading fraction {}", qcd_frac);
+
+                Logger::get("SM FakeFactor (tt)")->debug("QCD - subleading lep pt correction {}", qcd_tau_pt_corr);
+                Logger::get("SM FakeFactor (tt)")->debug("QCD - visible mass correction {}", qcd_m_vis_corr);
+                Logger::get("SM FakeFactor (tt)")->debug("QCD - DR to SR correction {}", qcd_DR_SR_corr);
 
                 ff = qcd_frac * std::max(qcd_ff, (float)0.) * qcd_tau_pt_corr * qcd_m_vis_corr * qcd_DR_SR_corr;
             }
         }
 
-        Logger::get("SM FrakeFactor (tt)")->debug("Event Fake Factor {}", ff);
+        Logger::get("SM FakeFactor (tt)")->debug("Event Fake Factor {}", ff);
         
         return ff;
     };

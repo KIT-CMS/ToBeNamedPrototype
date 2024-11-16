@@ -1,6 +1,7 @@
 #ifndef GUARDFAKEFACTORS_H
 #define GUARDFAKEFACTORS_H
 /// The namespace that contains the fake factor function.
+#include "../include/utility/CorrectionManager.hxx"
 #include "../include/utility/Logger.hxx"
 #include "ROOT/RDataFrame.hxx"
 #include "correction.h"
@@ -412,6 +413,7 @@ fakefactor_nmssm_tt(ROOT::RDF::RNode df, const std::string &outputname,
 ROOT::RDF::RNode
 raw_fakefactor_sm_lt(
     ROOT::RDF::RNode df,
+    correctionManager::CorrectionManager &correctionManager,
     const std::string &outputname,
     const std::string &tau_pt,
     const std::string &njets,
@@ -433,10 +435,16 @@ raw_fakefactor_sm_lt(
     Logger::get("SM RawFakeFactor (lt)")->debug("Wjets variation - Name {}", wjets_variation);
     Logger::get("SM RawFakeFactor (lt)")->debug("ttbar variation - Name {}", ttbar_variation);
 
-    auto qcd = correction::CorrectionSet::from_file(ff_file)->at("QCD_fake_factors");
-    auto wjets = correction::CorrectionSet::from_file(ff_file)->at("Wjets_fake_factors");
-    auto ttbar = correction::CorrectionSet::from_file(ff_file)->at("ttbar_fake_factors");
-    auto fractions = correction::CorrectionSet::from_file(ff_file)->at("process_fractions");
+    auto qcd = correctionManager.loadCorrection(ff_file, "QCD_fake_factors");
+    auto wjets = correctionManager.loadCorrection(ff_file, "Wjets_fake_factors");
+    auto ttbar = correctionManager.loadCorrection(ff_file, "ttbar_fake_factors");
+    auto fractions = correctionManager.loadCorrection(ff_file, "process_fractions");
+
+
+    // auto qcd = correction::CorrectionSet::from_file(ff_file)->at("QCD_fake_factors");
+    // auto wjets = correction::CorrectionSet::from_file(ff_file)->at("Wjets_fake_factors");
+    // auto ttbar = correction::CorrectionSet::from_file(ff_file)->at("ttbar_fake_factors");
+    // auto fractions = correction::CorrectionSet::from_file(ff_file)->at("process_fractions");
 
     auto calc_fake_factor = [
         qcd, wjets, ttbar, fractions,
@@ -513,6 +521,7 @@ raw_fakefactor_sm_lt(
 ROOT::RDF::RNode
 fakefactor_sm_lt(
     ROOT::RDF::RNode df, 
+    correctionManager::CorrectionManager &correctionManager,
     const std::string &outputname,
     const std::string &tau_pt,
     const std::string &njets,
@@ -558,21 +567,21 @@ fakefactor_sm_lt(
     Logger::get("SM FaceFactor (lt)")->debug("QCD lep iso correction variation - Name {}", qcd_corr_lep_iso_variation);
     Logger::get("SM FaceFactor (lt)")->debug("Wjets lep iso correction variation - Name {}", wjets_corr_lep_iso_variation);
 
-    auto qcd = correction::CorrectionSet::from_file(ff_file)->at("QCD_fake_factors");
-    auto wjets = correction::CorrectionSet::from_file(ff_file)->at("Wjets_fake_factors");
-    auto ttbar = correction::CorrectionSet::from_file(ff_file)->at("ttbar_fake_factors");
+    auto qcd = correctionManager.loadCorrection(ff_file, "QCD_fake_factors");
+    auto wjets = correctionManager.loadCorrection(ff_file, "Wjets_fake_factors");
+    auto ttbar = correctionManager.loadCorrection(ff_file, "ttbar_fake_factors");
     
-    auto fractions = correction::CorrectionSet::from_file(ff_file)->at("process_fractions");
+    auto fractions = correctionManager.loadCorrection(ff_file, "process_fractions");
 
-    auto qcd_lep_pt_closure = correction::CorrectionSet::from_file(ff_corr_file)->at("QCD_non_closure_leading_lep_pt_correction");
-    auto wjets_lep_pt_closure = correction::CorrectionSet::from_file(ff_corr_file)->at("Wjets_non_closure_leading_lep_pt_correction");
-    auto ttbar_lep_pt_closure = correction::CorrectionSet::from_file(ff_corr_file)->at("ttbar_non_closure_leading_lep_pt_correction");
+    auto qcd_lep_pt_closure = correctionManager.loadCorrection(ff_corr_file, "QCD_non_closure_leading_lep_pt_correction");
+    auto wjets_lep_pt_closure = correctionManager.loadCorrection(ff_corr_file, "Wjets_non_closure_leading_lep_pt_correction");
+    auto ttbar_lep_pt_closure = correctionManager.loadCorrection(ff_corr_file, "ttbar_non_closure_leading_lep_pt_correction");
     
-    auto qcd_DR_SR = correction::CorrectionSet::from_file(ff_corr_file)->at("QCD_DR_SR_correction");
-    auto wjets_DR_SR = correction::CorrectionSet::from_file(ff_corr_file)->at("Wjets_DR_SR_correction");
+    auto qcd_DR_SR = correctionManager.loadCorrection(ff_corr_file, "QCD_DR_SR_correction");
+    auto wjets_DR_SR = correctionManager.loadCorrection(ff_corr_file, "Wjets_DR_SR_correction");
 
-    auto qcd_lep_iso_closure = correction::CorrectionSet::from_file(ff_corr_file)->at("QCD_non_closure_lep_iso_correction");
-    auto wjets_lep_iso_closure = correction::CorrectionSet::from_file(ff_corr_file)->at("Wjets_non_closure_lep_iso_correction");
+    auto qcd_lep_iso_closure = correctionManager.loadCorrection(ff_corr_file, "QCD_non_closure_lep_iso_correction");
+    auto wjets_lep_iso_closure = correctionManager.loadCorrection(ff_corr_file, "Wjets_non_closure_lep_iso_correction");
     
     
     auto calc_fake_factor = [
@@ -670,6 +679,7 @@ fakefactor_sm_lt(
 ROOT::RDF::RNode
 raw_fakefactor_sm_tt(
     ROOT::RDF::RNode df,
+    correctionManager::CorrectionManager &correctionManager,
     const std::string &outputname,
     const int &tau_idx,
     const std::string &tau_pt_1,
@@ -688,11 +698,11 @@ raw_fakefactor_sm_tt(
     Logger::get("SM RawFakeFactor (tt)")->debug("QCD variation - Name {}", qcd_variation);
     Logger::get("SM RawFakeFactor (tt)")->debug("Fraction variation - Name {}", fraction_variation);
 
-    auto qcd = correction::CorrectionSet::from_file(ff_file)->at("QCD_fake_factors");
-    auto qcd_subleading = correction::CorrectionSet::from_file(ff_file)->at("QCD_subleading_fake_factors");
+    auto qcd = correctionManager.loadCorrection(ff_file, "QCD_fake_factors");
+    auto qcd_subleading = correctionManager.loadCorrection(ff_file, "QCD_subleading_fake_factors");
 
-    auto fractions = correction::CorrectionSet::from_file(ff_file) -> at("process_fractions");
-    auto fractions_subleading = correction::CorrectionSet::from_file(ff_file) -> at("process_fractions_subleading");
+    auto fractions = correctionManager.loadCorrection(ff_file, "process_fractions");
+    auto fractions_subleading = correctionManager.loadCorrection(ff_file, "process_fractions_subleading");
 
     auto calc_fake_factor = [
         tau_idx, 
@@ -763,6 +773,7 @@ raw_fakefactor_sm_tt(
 ROOT::RDF::RNode
 fakefactor_sm_tt(
     ROOT::RDF::RNode df, 
+    correctionManager::CorrectionManager &correctionManager,
     const std::string &outputname,
     const int &tau_idx,
     const std::string &tau_pt_1,
@@ -791,20 +802,20 @@ fakefactor_sm_tt(
     Logger::get("SM FakeFactor (tt)")->debug("QCD DR to SR correction Variation - Name {}", qcd_corr_drsr_variation);
     Logger::get("SM FakeFactor (tt)")->debug("QCD m_vis correction Variation - Name {}", qcd_corr_m_vis_variation);
 
-    auto qcd = correction::CorrectionSet::from_file(ff_file)->at("QCD_fake_factors");
-    auto qcd_subleading = correction::CorrectionSet::from_file(ff_file)->at("QCD_subleading_fake_factors");
+    auto qcd = correctionManager.loadCorrection(ff_file, "QCD_fake_factors");
+    auto qcd_subleading = correctionManager.loadCorrection(ff_file, "QCD_subleading_fake_factors");
 
-    auto qcd_tau_pt_closure = correction::CorrectionSet::from_file(ff_corr_file)->at("QCD_non_closure_subleading_lep_pt_correction");
-    auto qcd_tau_pt_closure_subleading = correction::CorrectionSet::from_file(ff_corr_file)->at("QCD_subleading_non_closure_leading_lep_pt_correction");
+    auto qcd_tau_pt_closure = correctionManager.loadCorrection(ff_corr_file, "QCD_non_closure_subleading_lep_pt_correction");
+    auto qcd_tau_pt_closure_subleading = correctionManager.loadCorrection(ff_corr_file, "QCD_subleading_non_closure_leading_lep_pt_correction");
     
-    auto qcd_m_vis_closure = correction::CorrectionSet::from_file(ff_corr_file)->at("QCD_non_closure_m_vis_correction");
-    auto qcd_m_vis_closure_subleading = correction::CorrectionSet::from_file(ff_corr_file)->at("QCD_subleading_non_closure_m_vis_correction");
+    auto qcd_m_vis_closure = correctionManager.loadCorrection(ff_corr_file, "QCD_non_closure_m_vis_correction");
+    auto qcd_m_vis_closure_subleading = correctionManager.loadCorrection(ff_corr_file, "QCD_subleading_non_closure_m_vis_correction");
     
-    auto qcd_DR_SR = correction::CorrectionSet::from_file(ff_corr_file)->at("QCD_DR_SR_correction");
-    auto qcd_DR_SR_subleading = correction::CorrectionSet::from_file(ff_corr_file)->at("QCD_subleading_DR_SR_correction");
+    auto qcd_DR_SR = correctionManager.loadCorrection(ff_corr_file, "QCD_DR_SR_correction");
+    auto qcd_DR_SR_subleading = correctionManager.loadCorrection(ff_corr_file, "QCD_subleading_DR_SR_correction");
 
-    auto fractions = correction::CorrectionSet::from_file(ff_file) -> at("process_fractions");
-    auto fractions_subleading = correction::CorrectionSet::from_file(ff_file) -> at("process_fractions_subleading");
+    auto fractions = correctionManager.loadCorrection(ff_file, "process_fractions");
+    auto fractions_subleading = correctionManager.loadCorrection(ff_file, "process_fractions_subleading");
 
     auto calc_fake_factor = [
         tau_idx, 

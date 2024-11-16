@@ -33,6 +33,7 @@ fakefactor_nmssm_tt(ROOT::RDF::RNode df, const std::string &outputname,
 ROOT::RDF::RNode
 raw_fakefactor_sm_lt(
     ROOT::RDF::RNode df,
+    correctionManager::CorrectionManager &correctionManager,
     const std::string &outputname,
     const std::string &tau_pt,
     const std::string &njets,
@@ -47,6 +48,7 @@ raw_fakefactor_sm_lt(
 ROOT::RDF::RNode
 raw_fakefactor_sm_tt(
     ROOT::RDF::RNode df,
+    correctionManager::CorrectionManager &correctionManager,
     const std::string &outputname,
     const int &tau_idx,
     const std::string &tau_pt_1,
@@ -60,6 +62,7 @@ raw_fakefactor_sm_tt(
 ROOT::RDF::RNode
 fakefactor_sm_lt(
     ROOT::RDF::RNode df, 
+    correctionManager::CorrectionManager &correctionManager,
     const std::string &outputname,
     const std::string &tau_pt,
     const std::string &njets,
@@ -85,6 +88,7 @@ fakefactor_sm_lt(
 ROOT::RDF::RNode
 fakefactor_sm_tt(
     ROOT::RDF::RNode df, 
+    correctionManager::CorrectionManager &correctionManager,
     const std::string &outputname,
     const int &tau_idx,
     const std::string &tau_pt_1,

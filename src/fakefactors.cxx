@@ -398,6 +398,7 @@ fakefactor_nmssm_tt(ROOT::RDF::RNode df, const std::string &outputname,
  * fraction binning, and an additional split in deltaR is applied for wjets.
  *
  * @param df the input dataframe
+ * @param correctionManager The CorrectionManager object
  * @param outputname name of the output column for the fake factor
  * @param tau_pt pt of the hadronic tau in the tau pair
  * @param njets number of good jets in the event
@@ -494,6 +495,7 @@ raw_fakefactor_sm_lt(
  * to the NMSSM version, njets is used for the fraction binning, and an
  * additional split in deltaR is applied for wjets.
  * @param df the input dataframe
+ * @param correctionManager The CorrectionManager object
  * @param outputname name of the output column for the fake factor
  * @param tau_pt pt of the hadronic tau in the tau pair
  * @param njets number of good jets in the event
@@ -664,6 +666,7 @@ fakefactor_sm_lt(
  * to the NMSSM version, njets is used for the fraction binning, and only QCD
  * fake factors are considered (for now).
  * @param df the input dataframe
+ * @param correctionManager The CorrectionManager object
  * @param outputname name of the output column for the fake factor
  * @param tau_idx index of the tau, leading/subleading
  * @param tau_pt_1 pt of the leading hadronic tau in the tau pair
@@ -756,6 +759,7 @@ raw_fakefactor_sm_tt(
  * to the NMSSM version, njets is used for the fraction binning, and only QCD
  * fake factors are considered (for now).
  * @param df the input dataframe
+ * @param correctionManager The CorrectionManager object
  * @param outputname name of the output column for the fake factor
  * @param tau_idx index of the tau, leading/subleading
  * @param tau_pt_1 pt of the leading hadronic tau in the tau pair

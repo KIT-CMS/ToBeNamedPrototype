@@ -1,0 +1,519 @@
+{
+  "schema_version": 2,
+  "corrections": [
+    {
+      "name": "TauID_deeptau2p1_sf_emb_ptbinned",
+      "description": "pt-dependent tau ID scale factor for tau embedded samples",
+      "version": 0,
+      "inputs": [
+        {
+          "name": "pt",
+          "type": "real",
+          "description": "Tau pT"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Variation: nom, Up, Down"
+        },
+        {
+          "name": "wp",
+          "type": "string",
+          "description": "DeepTau2017v2p1VSjet working point: Loose-VTight "
+        },
+        {
+          "name": "vsele_wp",
+          "type": "string",
+          "description": "DeepTau2017v2p1VSe working point: VVLoose-Tight "
+        }
+      ],
+      "output": {
+        "name": "sf",
+        "type": "real",
+        "description": "pT-dependent scale factor"
+      },
+      "data": {
+        "nodetype": "category",
+        "input": "wp",
+        "content": [
+          {
+            "key": "VVVLoose",
+            "value": {
+              "nodetype": "category",
+              "input": "vsele_wp",
+              "content": [
+                {
+                  "key": "VVLoose",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      20.0,
+                      25.0,
+                      30.0,
+                      35.0,
+                      40.0,
+                      10000.0
+                    ],
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "type",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 1.08461332321167
+                          },
+                          {
+                            "key": "up",
+                            "value": 1.1921584606170654
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.9736493825912476
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "type",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 1.0222771167755127
+                          },
+                          {
+                            "key": "up",
+                            "value": 1.081565499305725
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.9612539410591125
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "type",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 1.0148460865020752
+                          },
+                          {
+                            "key": "up",
+                            "value": 1.0586379766464233
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.972495973110199
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "type",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 1.0231951475143433
+                          },
+                          {
+                            "key": "up",
+                            "value": 1.0612612962722778
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.9851176738739014
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "type",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 1.0115325450897217
+                          },
+                          {
+                            "key": "up",
+                            "value": 1.0498398542404175
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.9747704863548279
+                          }
+                        ]
+                      }
+                    ],
+                    "flow": "clamp"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "VVLoose",
+            "value": {
+              "nodetype": "category",
+              "input": "vsele_wp",
+              "content": [
+                {
+                  "key": "VVLoose",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      20.0,
+                      25.0,
+                      30.0,
+                      35.0,
+                      40.0,
+                      10000.0
+                    ],
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "type",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 1.081212043762207
+                          },
+                          {
+                            "key": "up",
+                            "value": 1.1585066318511963
+                          },
+                          {
+                            "key": "down",
+                            "value": 1.000666618347168
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "type",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 1.001457929611206
+                          },
+                          {
+                            "key": "up",
+                            "value": 1.0479321479797363
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.9557708501815796
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "type",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 1.0344406366348267
+                          },
+                          {
+                            "key": "up",
+                            "value": 1.068576455116272
+                          },
+                          {
+                            "key": "down",
+                            "value": 1.0000356435775757
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "type",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 1.0147632360458374
+                          },
+                          {
+                            "key": "up",
+                            "value": 1.0457322597503662
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.9833084344863892
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "type",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 1.0150340795516968
+                          },
+                          {
+                            "key": "up",
+                            "value": 1.04561185836792
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.9844299554824829
+                          }
+                        ]
+                      }
+                    ],
+                    "flow": "clamp"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TauID_deeptau2p1_sf_emb_dmbinned",
+      "description": "dm-dependent tau ID scale factor for tau embedded samples",
+      "version": 0,
+      "inputs": [
+        {
+          "name": "decaymode",
+          "type": "int",
+          "description": "Tau decay mode"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Variation: nom, Up, Down"
+        },
+        {
+          "name": "wp",
+          "type": "string",
+          "description": "DeepTau2017v2p1VSjet working point: Loose-VTight "
+        },
+        {
+          "name": "vsele_wp",
+          "type": "string",
+          "description": "DeepTau2017v2p1VSe working point: VVLoose-Tight "
+        }
+      ],
+      "output": {
+        "name": "sf",
+        "type": "real",
+        "description": "DM-dependent scale factor"
+      },
+      "data": {
+        "nodetype": "category",
+        "input": "wp",
+        "content": [
+          {
+            "key": "VVVLoose",
+            "value": {
+              "nodetype": "category",
+              "input": "vsele_wp",
+              "content": [
+                {
+                  "key": "VVLoose",
+                  "value": {
+                    "nodetype": "category",
+                    "input": "decaymode",
+                    "content": [
+                      {
+                        "key": 0,
+                        "value": {
+                          "nodetype": "category",
+                          "input": "type",
+                          "content": [
+                            {
+                              "key": "nom",
+                              "value": 1.0946204662322998
+                            },
+                            {
+                              "key": "up",
+                              "value": 1.148512363433838
+                            },
+                            {
+                              "key": "down",
+                              "value": 1.0385366678237915
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "key": 1,
+                        "value": {
+                          "nodetype": "category",
+                          "input": "type",
+                          "content": [
+                            {
+                              "key": "nom",
+                              "value": 1.034210205078125
+                            },
+                            {
+                              "key": "up",
+                              "value": 1.0989350080490112
+                            },
+                            {
+                              "key": "down",
+                              "value": 0.9653807282447815
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "key": 10,
+                        "value": {
+                          "nodetype": "category",
+                          "input": "type",
+                          "content": [
+                            {
+                              "key": "nom",
+                              "value": 1.0557769536972046
+                            },
+                            {
+                              "key": "up",
+                              "value": 1.1372177600860596
+                            },
+                            {
+                              "key": "down",
+                              "value": 0.968848705291748
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "key": 11,
+                        "value": {
+                          "nodetype": "category",
+                          "input": "type",
+                          "content": [
+                            {
+                              "key": "nom",
+                              "value": 1.0557769536972046
+                            },
+                            {
+                              "key": "up",
+                              "value": 1.1372177600860596
+                            },
+                            {
+                              "key": "down",
+                              "value": 0.968848705291748
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "VVLoose",
+            "value": {
+              "nodetype": "category",
+              "input": "vsele_wp",
+              "content": [
+                {
+                  "key": "VVLoose",
+                  "value": {
+                    "nodetype": "category",
+                    "input": "decaymode",
+                    "content": [
+                      {
+                        "key": 0,
+                        "value": {
+                          "nodetype": "category",
+                          "input": "type",
+                          "content": [
+                            {
+                              "key": "nom",
+                              "value": 1.0518479347229004
+                            },
+                            {
+                              "key": "up",
+                              "value": 1.095225214958191
+                            },
+                            {
+                              "key": "down",
+                              "value": 1.0075856447219849
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "key": 1,
+                        "value": {
+                          "nodetype": "category",
+                          "input": "type",
+                          "content": [
+                            {
+                              "key": "nom",
+                              "value": 1.1166409254074097
+                            },
+                            {
+                              "key": "up",
+                              "value": 1.158448576927185
+                            },
+                            {
+                              "key": "down",
+                              "value": 1.0720072984695435
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "key": 10,
+                        "value": {
+                          "nodetype": "category",
+                          "input": "type",
+                          "content": [
+                            {
+                              "key": "nom",
+                              "value": 1.0562398433685303
+                            },
+                            {
+                              "key": "up",
+                              "value": 1.1059238910675049
+                            },
+                            {
+                              "key": "down",
+                              "value": 1.002263069152832
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "key": 11,
+                        "value": {
+                          "nodetype": "category",
+                          "input": "type",
+                          "content": [
+                            {
+                              "key": "nom",
+                              "value": 1.0562398433685303
+                            },
+                            {
+                              "key": "up",
+                              "value": 1.1059238910675049
+                            },
+                            {
+                              "key": "down",
+                              "value": 1.002263069152832
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

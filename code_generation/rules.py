@@ -391,7 +391,7 @@ class ReplaceProducer(ProducerRule):
                             )
                             outputs_to_be_updated[scope].remove(removed_output)
                     for added_output in added_outputs[scope]:
-                        if added_output in outputs_to_be_updated[scope]:
+                        if added_output not in outputs_to_be_updated[scope]:
                             log.debug(
                                 "ReplaceProducer: Adding {} from outputs in scope {}".format(
                                     added_output, scope

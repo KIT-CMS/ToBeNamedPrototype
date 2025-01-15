@@ -1681,6 +1681,8 @@ ROOT::RDF::RNode AntiCutCBID(ROOT::RDF::RNode df, const std::string &maskname,
                              const std::string &nameID, const int &IDvalue) {
     auto df1 =
         df.Define(maskname, basefunctions::FilterMaxInt(IDvalue), {nameID});
+    return df1;
+}
 
 ROOT::RDF::RNode CutCBIDNoIso(ROOT::RDF::RNode df, const std::string &maskname,
                               const std::string &nameID, const int &IDvalue) {

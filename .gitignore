@@ -1,8 +1,10 @@
 # folders
-build/
+build/*
 build*/
+!build/.gitkeep
 log/
 logs/
+generation_logs/
 # ignore all analysis in the config folder apart from the unittest and the template
 analysis_configurations/*
 !analysis_configurations/unittest

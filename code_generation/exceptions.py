@@ -1,6 +1,7 @@
 from __future__ import annotations  # needed for type annotations in > python 3.7
 from typing import List, Set, Union
 from code_generation.quantity import Quantity
+from code_generation.helpers import is_empty
 
 
 class ConfigurationError(Exception):
@@ -108,7 +109,7 @@ class InvalidShiftError(ConfigurationError):
     """
 
     def __init__(self, shift: str, sample: str, scope: Union[str, None] = None):
-        if scope is None:
+        if is_empty(scope):
             self.message = "Shift {} is not setup properly or not available for sampletype {}".format(
                 shift, sample
             )

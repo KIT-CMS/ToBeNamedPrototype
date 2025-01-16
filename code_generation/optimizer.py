@@ -1,6 +1,7 @@
 from __future__ import annotations  # needed for type annotations in > python 3.7
 from code_generation.quantity import NanoAODQuantity, Quantity
 from code_generation.producer import Filter, BaseFilter, Producer, ProducerGroup
+from code_generation.helpers import is_empty
 from typing import Set, Tuple, Union, List
 import logging
 
@@ -79,7 +80,7 @@ class ProducerOrdering:
         """
         outputs: List[Quantity] = []
         for producer in self.global_producers:
-            if producer.get_outputs("global") is not None:
+            if not is_empty(producer.get_outputs("global")):
                 outputs.extend(
                     [
                         quantity
@@ -155,7 +156,7 @@ class ProducerOrdering:
                 log.error("Please check, if all needed producers are activated")
                 raise Exception
             wrongProducer, wrong_inputs = self.check_ordering()
-            if wrongProducer is not None:
+            if not is_empty(wrongProducer):
                 producers_to_relocate = self.find_inputs(wrongProducer, wrong_inputs)
                 # if len(producers_to_relocate) == 0:
                 #     self.optimized = True
@@ -197,7 +198,7 @@ class ProducerOrdering:
             outputs = self.global_outputs
         for producer_to_check in self.ordering:
             temp_outputs = producer_to_check.get_outputs(self.scope)
-            if temp_outputs is not None:
+            if not is_empty(temp_outputs):
                 outputs.extend(
                     [
                         quantity

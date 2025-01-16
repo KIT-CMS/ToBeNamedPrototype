@@ -4,6 +4,7 @@ from code_generation.exceptions import (
     SampleConfigurationError,
     EraConfigurationError,
 )
+from code_generation.helpers import is_empty
 
 ConfigurationParameters = Union[str, int, float, bool]
 
@@ -71,7 +72,7 @@ class SampleModifier(Modifier):
         """
         if sample in self.samples:
             return self.modifier_dict[sample]
-        elif self.default is not None:
+        elif not is_empty(self.default):
             return self.default
         else:
             raise SampleConfigurationError(sample, self.samples)
@@ -106,7 +107,7 @@ class EraModifier(Modifier):
         """
         if era in self.eras:
             return self.modifier_dict[era]
-        elif self.default is not None:
+        elif not is_empty(self.default):
             return self.default
         else:
             raise EraConfigurationError(era, self.eras)

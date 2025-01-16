@@ -11,6 +11,7 @@ from code_generation.producer import (
     TProducerStore,
 )
 from code_generation.quantity import NanoAODQuantity
+from code_generation.helpers import is_empty
 
 log = logging.getLogger(__name__)
 
@@ -181,7 +182,7 @@ class SystematicShift(object):
         Returns:
             set: Set of scopes that are affected by the systematic shift.
         """
-        if scopes is None:
+        if is_empty(scopes):
             scope_set: Set[str] = (
                 set(self.shift_config.keys())
                 | set(self.input_producers.keys())
@@ -302,7 +303,7 @@ class SystematicShift(object):
         Returns:
             None
         """
-        if scopes is None:
+        if is_empty(scopes):
             scopes = self.scopes
         if isinstance(scopes, str):
             scopes = set(scopes)
